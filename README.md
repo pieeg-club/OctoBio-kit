@@ -1,5 +1,7 @@
-# OctoBio-kit
-16-channel wireless EEG + Arduino starter kit: control real electronics with your brain, programmed with blocks in the browser.
+# OctoBio-kit  
+16-channel wireless EEG + Arduino starter kit: control real electronics with your brain, programmed with blocks in the browser.  
+
+<img src="https://github.com/pieeg-club/OctoBio-kit/blob/main/Images/OctoBio%20kit.png" alt="general view" title="general view">  
 
 
 # OctoBio Kit
