@@ -1,0 +1,1313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OctoBio Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Workbench: device strip on top, script editor left, live hardware view right, serial log below. */
+:root{
+  /* PiEEG brand: navy #1a395f, cyan #00bbd8 */
+  --bg:#f3f7fb; --bg2:#e8f0f6; --card:#ffffff; --code:#f7fafc; --line:#cfdde8; --line2:#e3ecf3;
+  --navy:#1a395f; --ink:#24384f; --muted:#5b7088; --faint:#9aaebf;
+  --teal:#00bbd8; --teal2:#0090a8; --kw:#1a395f; --fn:#0090a8; --ok:#0090a8; --warn:#1a395f; --bad:#d23a4f; --violet:#1a395f;
+  --sans:"Barlow",system-ui,sans-serif; --cond:"Barlow Semi Condensed","Barlow",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.45;
+  background-image:linear-gradient(var(--line2) 1px,transparent 1px),linear-gradient(90deg,var(--line2) 1px,transparent 1px);background-size:28px 28px}
+button,select,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.wrap{max-width:1480px;margin:0 auto;padding:14px max(16px,env(safe-area-inset-right,0px)) 28px max(16px,env(safe-area-inset-left,0px))}
+header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.logo{height:42px;width:auto}
+header h1{margin:0;font:700 22px/1 var(--cond);letter-spacing:.14em;color:var(--navy)}
+header p{margin:4px 0 0;font:500 10.5px/1 var(--cond);letter-spacing:.26em;color:var(--faint)}
+.spacer{flex:1}
+.pill{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:7px 12px;font:600 11px/1 var(--cond);letter-spacing:.1em;text-transform:uppercase;color:var(--navy);text-decoration:none;display:inline-flex;align-items:center;gap:7px}
+.pill[aria-pressed="true"]{background:var(--navy);color:#ffffff;border-color:var(--navy)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;min-width:0}
+.card>h2{margin:0;padding:11px 14px;font:700 12px/1 var(--cond);letter-spacing:.14em;color:var(--navy);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;text-transform:uppercase}
+.card>h2 .r{margin-left:auto;display:flex;gap:6px;align-items:center}
+/* device strip */
+.devices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.dev{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:14px}
+.dev .ic{width:46px;height:46px;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;background:var(--bg);color:var(--navy)}
+.dev .ic svg{width:24px;height:24px}
+.dev b.name{font:700 15px/1.1 var(--cond);letter-spacing:.06em;color:var(--navy);text-transform:uppercase}
+.dev .via{font:500 11px/1 var(--mono);color:var(--muted);margin-left:6px}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.step{display:flex;align-items:center;gap:6px;font:600 11px/1 var(--cond);letter-spacing:.06em;color:var(--faint);border:1px solid var(--line2);border-radius:20px;padding:4px 9px 4px 6px;background:var(--bg)}
+.step i{width:14px;height:14px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;font-style:normal;font-size:9px}
+.step.done{color:var(--ok);border-color:#a6e3ee;background:#e6f8fb}
+.step.done i{background:var(--ok);border-color:var(--ok);color:#fff}
+.step.busy{color:var(--kw);border-color:#b9d2e3}
+.step.busy i{border-top-color:transparent;animation:spin .8s linear infinite}
+.step.fail{color:var(--bad);border-color:#f0c3ca;background:#fdf0f2}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dev .msg{margin-top:7px;font-size:12.5px;color:var(--muted);min-height:18px}
+.dev .msg.ok{color:var(--ok)}.dev .msg.bad{color:var(--bad)}
+.dev .btns{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.btn{border:1px solid var(--navy);background:var(--navy);color:#ffffff;border-radius:7px;padding:9px 14px;font:600 12px/1 var(--cond);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.btn.ghost{background:var(--card);color:var(--navy);border-color:var(--line)}
+.btn.teal{background:var(--teal);border-color:var(--teal)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.badge{font:600 10px/1 var(--cond);letter-spacing:.12em;padding:5px 8px;border-radius:5px;background:var(--bg2);color:var(--muted)}
+.badge.live{background:#dcf5fa;color:var(--ok)}
+/* main grid */
+.main{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:12px;align-items:start}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.edbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 12px;border-bottom:1px solid var(--line)}
+.edbar select{border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:7px 8px;max-width:100%}
+.edbar .st{font:600 11px/1 var(--cond);letter-spacing:.12em;color:var(--muted);display:flex;align-items:center;gap:6px}
+.edbar .st i{width:8px;height:8px;border-radius:50%;background:var(--faint)}
+.edbar .st.on{color:var(--ok)}.edbar .st.on i{background:var(--ok);box-shadow:0 0 0 3px rgba(0,187,216,.2)}
+.edbar .st.err{color:var(--bad)}.edbar .st.err i{background:var(--bad)}
+.editor{display:grid;grid-template-columns:44px 1fr;background:var(--code);font:400 13px/1.6 var(--mono);height:min(52vh,520px);min-height:300px;overflow:hidden;position:relative}
+.gutter{padding:10px 8px 10px 0;text-align:right;color:var(--faint);overflow:hidden;user-select:none;border-right:1px solid var(--line2);white-space:pre}
+.gutter .err{color:#fff;background:var(--bad);border-radius:3px}
+textarea#code{border:0;outline:0;resize:none;background:transparent;padding:10px 12px;white-space:pre;overflow:auto;tab-size:2;color:var(--navy);font:inherit;line-height:inherit;height:100%}
+.console{background:var(--navy);color:#e6eef5;font:400 12px/1.55 var(--mono);height:150px;overflow:auto;padding:8px 12px;margin:0;white-space:pre-wrap;word-break:break-word}
+.console .e{color:#ff9aa6}.console .s{color:#7fe0f0}.console .t{color:#8ea3bb}
+.hint{font-size:12px;color:var(--muted);padding:8px 12px;border-top:1px solid var(--line2)}
+kbd{font:500 10.5px/1 var(--mono);border:1px solid var(--line);border-radius:4px;padding:2px 5px;background:var(--bg)}
+/* outputs mirror */
+.mirror{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px}
+.out{border:1px solid var(--line2);border-radius:8px;padding:10px;background:var(--bg);display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center}
+.out small{font:600 10px/1 var(--cond);letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.out .v{font:600 12px/1 var(--mono);color:var(--navy)}
+.lamp{width:26px;height:26px;border-radius:50%;background:#6d2a26;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25)}
+.lamp.on{background:#ff3b30;box-shadow:0 0 16px 4px rgba(255,59,48,.55)}
+.lamp.flash{animation:fl .4s steps(2) infinite}
+.lamp.y{background:#7a6324}.lamp.y.on{background:#ffcf3a;box-shadow:0 0 16px 4px rgba(255,207,58,.6)}
+@keyframes fl{50%{background:#6d2a26;box-shadow:none}}
+.lcd{grid-column:span 2;align-items:stretch}
+.lcdbox{background:#1d3f8a;border:3px solid #102a63;border-radius:6px;padding:8px 10px;font:500 15px/1.3 var(--mono);color:#e4eeff;letter-spacing:.08em;white-space:pre;min-height:52px;text-align:left;overflow:hidden}
+.dial{width:70px;height:40px}
+/* readings */
+.reads{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;padding:12px}
+.rd{border:1px solid var(--line2);border-radius:8px;padding:8px 10px;background:var(--bg)}
+.rd small{display:block;font:600 10px/1 var(--cond);letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
+.rd b{display:block;margin-top:5px;font:600 16px/1 var(--mono);color:var(--navy);font-variant-numeric:tabular-nums}
+.rd b u{font:500 11px/1 var(--mono);color:var(--muted);text-decoration:none;margin-left:3px}
+.rd.stale b{color:var(--faint)}
+.rd .k{font:500 10px/1 var(--mono);color:var(--faint);margin-top:4px;display:block}
+/* eeg */
+.eegtop{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:12px 12px 0}
+.band small{display:flex;justify-content:space-between;font:600 10.5px/1 var(--cond);letter-spacing:.06em;color:var(--muted)}
+.band small b{font:600 11px/1 var(--mono);color:var(--navy)}
+.band .bar{height:8px;border-radius:4px;background:var(--line2);margin-top:5px;overflow:hidden}
+.band .bar i{display:block;height:100%;width:0;background:var(--c,#00bbd8);transition:width .15s}
+.eegstats{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 12px;font:500 12px/1 var(--mono);color:var(--muted)}
+.eegstats b{color:var(--navy)}
+#traces{display:block;width:100%;height:260px;background:#fbfdff;border-top:1px solid var(--line2)}
+.sim{display:none;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 12px;border-top:1px dashed var(--line);background:#eef8fb}
+.sim.on{display:flex}
+.sim label{font:600 11px/1 var(--cond);letter-spacing:.08em;text-transform:uppercase;color:var(--navy);display:flex;gap:6px;align-items:center}
+.sim input[type=range]{width:110px;accent-color:var(--teal)}
+/* manual */
+.manual{display:flex;flex-wrap:wrap;gap:6px;padding:12px;align-items:center}
+.manual input[type=text]{border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:7px 9px;width:150px}
+.manual input[type=range]{width:120px;accent-color:var(--teal)}
+/* log */
+details.log summary{cursor:pointer;list-style:none;padding:11px 14px;font:700 12px/1 var(--cond);letter-spacing:.14em;color:var(--navy);display:flex;gap:10px;align-items:center}
+details.log summary::-webkit-details-marker{display:none}
+.serial{margin:0;max-height:220px;overflow:auto;background:var(--code);border-top:1px solid var(--line);padding:8px 14px;font:400 11.5px/1.55 var(--mono);color:var(--ink);white-space:pre-wrap;word-break:break-all}
+.serial .o{color:var(--fn)}.serial .i{color:var(--kw)}.serial .n{color:var(--muted)}
+.serialsend{display:flex;gap:6px;padding:8px 14px;border-top:1px solid var(--line2)}
+.serialsend input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:7px 9px;font:400 12px/1 var(--mono)}
+/* reference */
+.ref{padding:4px 14px 14px;font-size:13px}
+.ref table{width:100%;border-collapse:collapse;font-size:12.5px}
+.ref td{border-bottom:1px solid var(--line2);padding:5px 4px;vertical-align:top}
+.ref td:first-child{font:500 12px/1.4 var(--mono);color:var(--kw);white-space:nowrap}
+.ref h3{font:700 11px/1 var(--cond);letter-spacing:.14em;color:var(--teal2);margin:14px 0 6px;text-transform:uppercase}
+.notice{margin:0 0 12px;padding:10px 14px;border-radius:9px;border:1px solid #9fdcea;background:#eef8fb;color:#1a395f;font-size:13px}
+.notice[hidden]{display:none}
+.safety{font-size:12px;color:var(--muted);margin-top:14px}
+.safety b{color:var(--warn)}
+/* live 3D kit */
+.stagecard{margin-bottom:12px}
+.stage{position:relative;height:min(56vh,470px);min-height:360px;overflow:hidden;border-radius:0 0 10px 10px;touch-action:none;
+  background:linear-gradient(var(--line2) 1px,transparent 1px) 0 0/28px 28px,linear-gradient(90deg,var(--line2) 1px,transparent 1px) 0 0/28px 28px,var(--bg)}
+.stage::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 55%,transparent 45%,rgba(232,240,246,.85) 100%);pointer-events:none}
+#scene{position:absolute;inset:0;width:100%;height:100%;z-index:1;cursor:grab}
+#scene.dragging{cursor:grabbing}
+#leaders{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
+.callout{position:absolute;z-index:3;width:min(230px,38%);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 11px;display:grid;grid-template-columns:26px 1fr;gap:3px 9px}
+.callout .ci{grid-row:span 2;width:26px;height:26px;border:1px solid var(--line);border-radius:7px;display:grid;place-items:center;color:var(--navy)}
+.callout .ci svg{width:15px;height:15px}
+.callout b{font:700 11.5px/1.1 var(--cond);letter-spacing:.08em;color:var(--navy);text-transform:uppercase;align-self:end}
+.callout span{font:500 11.5px/1.35 var(--mono);color:var(--muted)}
+.callout.live{border-color:#9fdcea}.callout.live span{color:var(--ok)}
+.viewbar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:4;display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:3px}
+.viewbar button{width:30px;height:28px;border:0;background:none;border-radius:5px;display:grid;place-items:center;color:var(--navy)}
+.viewbar button:hover{background:var(--bg2)}
+.viewbar svg{width:15px;height:15px}
+.stagehint{position:absolute;left:50%;bottom:50px;transform:translateX(-50%);z-index:4;background:var(--navy);color:#e8f0f6;font:500 11px/1 var(--cond);letter-spacing:.06em;padding:6px 11px;border-radius:5px;white-space:nowrap}
+.eegmini{position:absolute;right:14px;bottom:12px;z-index:4;width:240px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 9px}
+.eegmini .h{display:flex;justify-content:space-between;font:600 10px/1 var(--cond);letter-spacing:.12em;color:var(--navy)}
+.eegmini canvas{width:100%;height:50px;display:block;margin-top:5px}
+@media (max-width:760px){.stage{height:420px}.callout{width:150px;padding:6px 8px;grid-template-columns:20px 1fr}.callout .ci{width:20px;height:20px}.callout b{font-size:10px}.callout span{font-size:10px}.stagehint{display:none}.eegmini{width:150px;bottom:52px}.eegmini canvas{height:32px}}
+/* lessons */
+.lesnav{display:flex;flex-wrap:wrap;gap:5px;padding:10px 12px;border-bottom:1px solid var(--line2)}
+.lchip{width:30px;height:30px;border-radius:7px;border:1px solid var(--line);background:var(--bg);font:600 12px/1 var(--mono);color:var(--navy)}
+.lchip.ok{background:#dcf5fa;border-color:#9fdcea;color:var(--ok)}
+.lchip.cur{background:var(--navy);border-color:var(--navy);color:#ffffff}
+#lesBody{padding:12px 14px 14px}
+#lesBody .lk{font:600 10.5px/1.3 var(--cond);letter-spacing:.14em;color:var(--teal2);text-transform:uppercase}
+#lesBody .lk span{color:var(--muted)}
+#lesBody h3{margin:5px 0 6px;font:700 19px/1.1 var(--cond);letter-spacing:.05em;color:var(--navy);text-transform:uppercase}
+#lesBody p{margin:0 0 10px;font-size:13.5px;max-width:68ch}
+#lesBody code{font:500 12px/1 var(--mono);color:var(--kw);background:var(--code);border:1px solid var(--line2);border-radius:4px;padding:1px 4px}
+.tasks{list-style:none;margin:0 0 12px;padding:0;display:flex;flex-direction:column;gap:6px}
+.tasks li{display:flex;gap:9px;align-items:center;font-size:13px;color:var(--ink);background:var(--bg);border:1px solid var(--line2);border-radius:7px;padding:7px 10px}
+.tasks li i{width:18px;height:18px;flex:none;border-radius:50%;border:1.5px solid var(--faint);display:grid;place-items:center;font-style:normal;font-size:11px;color:#fff}
+.tasks li.done{border-color:#a6e3ee;background:#e6f8fb;color:var(--ok)}
+.tasks li.done i{background:var(--ok);border-color:var(--ok)}
+.tasks li.done i::before{content:"✓"}
+.lesbtns{display:flex;gap:6px;flex-wrap:wrap}
+#lesBody.complete h3::after{content:"  ★ COMPLETE";font-size:12px;color:var(--ok);letter-spacing:.12em}
+@media (max-width:1100px){.main{grid-template-columns:1fr}}
+@media (max-width:760px){.devices{grid-template-columns:1fr}.dev{grid-template-columns:auto 1fr}.dev .btns{grid-column:1/-1;flex-direction:row;flex-wrap:wrap}.mirror{grid-template-columns:repeat(2,minmax(0,1fr))}.lcd{grid-column:span 2}.eegtop{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <img class="logo" src="data:image/png;base64,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" alt="PiEEG" width="130" height="42">
+    <div style="border-left:2px solid var(--line);padding-left:14px"><h1>OCTOBIO STUDIO</h1><p>CONNECT · SCRIPT · RUN ON REAL HARDWARE</p></div>
+    <div class="spacer"></div>
+    <button class="pill" type="button" id="demoBtn" aria-pressed="false" title="Simulated Octopus 16 and starter kit, for trying scripts without hardware">Demo mode (no hardware)</button>
+    <a class="pill" href="https://docs.pieeg.com/hardware/devices/OctoBio_Kit/" target="_blank" rel="noopener">Docs ↗</a>
+    <a class="pill" href="https://octobridge.pieeg.com/flash" target="_blank" rel="noopener">Flash firmware ↗</a>
+  </header>
+
+  <p class="notice" id="apiNotice" hidden></p>
+
+  <section class="devices" aria-label="Devices">
+    <article class="card dev" id="devOcto">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="8" r="1.2" fill="currentColor"/><circle cx="8" cy="12" r="1.2" fill="currentColor"/><circle cx="16" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="16" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg></div>
+      <div>
+        <div><b class="name">Octopus 16</b><span class="via">Bluetooth LE</span> <span class="badge" id="octoBadge">OFF</span></div>
+        <div class="steps" id="octoSteps">
+          <span class="step" data-s="pair"><i></i>Paired</span>
+          <span class="step" data-s="gatt"><i></i>EEG service</span>
+          <span class="step" data-s="data"><i></i>Data flowing</span>
+          <span class="step" data-s="ch"><i></i>16 channels</span>
+        </div>
+        <div class="msg" id="octoMsg">Power it from the power bank, then press Connect.</div>
+      </div>
+      <div class="btns">
+        <button class="btn" type="button" id="octoConnect">Connect</button>
+      </div>
+    </article>
+    <article class="card dev" id="devKit">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="6" y="8" width="7" height="3" rx=".5"/><circle cx="16.5" cy="14.5" r="1.6"/><path d="M6 15h5"/></svg></div>
+      <div>
+        <div><b class="name">Starter kit</b><span class="via">USB · 115200</span> <span class="badge" id="kitBadge">OFF</span></div>
+        <div class="steps" id="kitSteps">
+          <span class="step" data-s="port"><i></i>Port open</span>
+          <span class="step" data-s="ready"><i></i>OctoBio firmware</span>
+          <span class="step" data-s="data"><i></i>Readings flowing</span>
+        </div>
+        <div class="msg" id="kitMsg">Plug it in with a USB data cable, then press Connect.</div>
+      </div>
+      <div class="btns">
+        <button class="btn" type="button" id="kitConnect">Connect</button>
+        <button class="btn ghost" type="button" id="kitTest" disabled>Test: flash + beep</button>
+      </div>
+    </article>
+  </section>
+
+  <section class="card stagecard" aria-label="Live kit">
+    <h2>Live kit <span class="r"><span class="badge" id="stageBadge">MIRRORS THE REAL HARDWARE</span></span></h2>
+    <div class="stage" id="stage">
+      <svg id="scene" role="img" aria-label="Starter kit and Octopus 16, showing the live state of the real hardware"></svg>
+      <svg id="leaders" aria-hidden="true"></svg>
+      <div id="callouts"></div>
+      <div class="eegmini"><div class="h"><span>EEG · CH 1 · LAST 3 S</span><span id="miniRms">—</span></div><canvas id="miniEeg" width="480" height="100"></canvas></div>
+      <div class="stagehint">Drag to pan · Q / E to rotate · Scroll to zoom</div>
+      <div class="viewbar" role="toolbar" aria-label="View">
+        <button type="button" id="rotL" aria-label="Rotate left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+        <button type="button" id="rotR" aria-label="Rotate right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button>
+        <button type="button" id="zOut" aria-label="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+        <button type="button" id="zIn" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5v14"/></svg></button>
+        <button type="button" id="vReset" aria-label="Reset view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg></button>
+      </div>
+    </div>
+  </section>
+
+  <div class="main">
+    <div class="col">
+      <section class="card" aria-label="Lessons" id="lessonsCard">
+        <h2>Lessons <span class="r"><span class="badge" id="lesProg">0/14 DONE</span></span></h2>
+        <div class="lesnav" id="lesNav"></div>
+        <div id="lesBody"></div>
+      </section>
+
+      <section class="card" aria-label="Script">
+        <h2>Script <span class="r"><span class="badge" id="saveBadge">SAVED IN THIS BROWSER</span></span></h2>
+        <div class="edbar">
+          <button class="btn teal" type="button" id="runBtn">▶ Run</button>
+          <button class="btn ghost" type="button" id="stopBtn" disabled>■ Stop</button>
+          <select id="examples" aria-label="Load an example"></select>
+          <span class="st" id="runSt"><i></i>STOPPED</span>
+        </div>
+        <div class="editor">
+          <div class="gutter" id="gutter" aria-hidden="true">1</div>
+          <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Script code"></textarea>
+        </div>
+        <pre class="console" id="console" aria-live="polite"><span class="t">Output from log() and errors appear here.</span>
+</pre>
+        <div class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> runs · <kbd>Esc</kbd> stops · Scripts are JavaScript. See the reference below for <code>kit</code> and <code>eeg</code>.</div>
+      </section>
+
+      <section class="card" aria-label="Reference">
+        <h2>Script reference</h2>
+        <div class="ref">
+          <h3>Starter kit: read</h3>
+          <table>
+            <tr><td>kit.knob</td><td>slide potentiometer, raw 0–1023</td></tr>
+            <tr><td>kit.light</td><td>light in lux (BH1750)</td></tr>
+            <tr><td>kit.distance</td><td>ultrasonic, cm (negative = no echo)</td></tr>
+            <tr><td>kit.temperature · kit.humidity</td><td>°C · % (DHT20)</td></tr>
+            <tr><td>kit.sound · kit.moisture</td><td>raw 0–1023</td></tr>
+            <tr><td>kit.button · kit.motion</td><td>true / false (button D7, PIR)</td></tr>
+            <tr><td>kit.ir</td><td>last IR remote code, or null</td></tr>
+            <tr><td>kit.tilt</td><td>'left' 'right' 'forward' 'back' 'flat' or null</td></tr>
+            <tr><td>kit.accel</td><td>{ x, y, z } raw accelerometer</td></tr>
+            <tr><td>kit.connected</td><td>true when the firmware answered</td></tr>
+          </table>
+          <h3>Starter kit: act</h3>
+          <table>
+            <tr><td>kit.led(on | 'flash')</td><td>red LED D10: true, false or 'flash'</td></tr>
+            <tr><td>kit.led2(on)</td><td>second light (D8)</td></tr>
+            <tr><td>kit.servo(deg)</td><td>0–180</td></tr>
+            <tr><td>kit.buzzer(on) · kit.relay(on)</td><td>true / false. Never put mains on the relay.</td></tr>
+            <tr><td>kit.lcd(line1, line2)</td><td>16×2 screen, 16 characters per line</td></tr>
+            <tr><td>kit.send('LED ON')</td><td>raw OctoBio command line</td></tr>
+          </table>
+          <h3>Octopus 16 (EEG)</h3>
+          <table>
+            <tr><td>eeg.alpha … eeg.gamma</td><td>relative band power 0–1 (delta theta alpha beta gamma)</td></tr>
+            <tr><td>eeg.focus · eeg.relax</td><td>0–1, uncalibrated indicators</td></tr>
+            <tr><td>eeg.rms · eeg.ok</td><td>µV · true when 2–200 µV</td></tr>
+            <tr><td>eeg.dom</td><td>strongest band name</td></tr>
+            <tr><td>eeg.samples</td><td>latest 16 raw channels, µV</td></tr>
+            <tr><td>eeg.connected · eeg.hz</td><td>data flowing · packets per second</td></tr>
+          </table>
+          <h3>Helpers</h3>
+          <table>
+            <tr><td>forever(async () =&gt; { … })</td><td>repeat until Stop</td></tr>
+            <tr><td>await wait(ms)</td><td>pause (Stop interrupts it)</td></tr>
+            <tr><td>map(v, inLo, inHi, outLo, outHi)</td><td>rescale a number (clamped)</td></tr>
+            <tr><td>log(…) · show(name, value)</td><td>print to the console · pin a value in “Your values”</td></tr>
+            <tr><td>onStop(fn)</td><td>run code when you press Stop</td></tr>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="col">
+      <section class="card" aria-label="Kit readings">
+        <h2>Kit readings <span class="r"><span class="badge" id="datRate">— /s</span></span></h2>
+        <div class="reads" id="reads"></div>
+        <div id="userVals" class="reads" hidden></div>
+        <div class="manual" aria-label="Manual test controls">
+          <button class="btn ghost" type="button" data-cmd="LED ON">LED on</button>
+          <button class="btn ghost" type="button" data-cmd="LED OFF">LED off</button>
+          <button class="btn ghost" type="button" data-cmd="LED2 ON">D8 on</button>
+          <button class="btn ghost" type="button" data-cmd="LED2 OFF">D8 off</button>
+          <button class="btn ghost" type="button" data-cmd="BEEP">Beep</button>
+          <label style="font:600 11px var(--cond);letter-spacing:.08em;color:var(--navy)">SERVO <input type="range" id="manServo" min="0" max="180" value="90" aria-label="Servo angle"></label>
+          <input type="text" id="manLcd" maxlength="16" placeholder="Text for the screen" aria-label="Screen text">
+          <button class="btn ghost" type="button" id="manLcdBtn">Show</button>
+        </div>
+      </section>
+
+      <section class="card" aria-label="EEG">
+        <h2>EEG · Octopus 16 <span class="r"><span class="badge" id="eegOkBadge">NO SIGNAL</span></span></h2>
+        <div class="eegtop" id="bands"></div>
+        <div class="eegstats" id="eegStats"></div>
+        <canvas id="traces" width="1200" height="520" aria-label="16-channel EEG traces"></canvas>
+        <div class="sim" id="simBar">
+          <label><input type="checkbox" id="simEyes"> Eyes closed</label>
+          <label><input type="checkbox" id="simFocus"> Concentrate</label>
+          <button class="btn ghost" type="button" id="simBlink">Blink</button>
+          <label>Knob <input type="range" id="simKnob" min="0" max="1023" value="300"></label>
+          <label>Hand cm <input type="range" id="simDist" min="2" max="80" value="40"></label>
+          <label><input type="checkbox" id="simBtn"> Button</label>
+          <label><input type="checkbox" id="simPir"> Motion</label>
+          <label><input type="checkbox" id="simDark"> Dark</label>
+        </div>
+      </section>
+
+      <details class="card log" id="logBox">
+        <summary>SERIAL LOG <span class="badge" id="logCount">0 lines</span></summary>
+        <pre class="serial" id="serial"></pre>
+        <form class="serialsend" id="rawForm"><input id="rawCmd" placeholder="Type a raw command, e.g. LED FLASH" aria-label="Raw command" autocomplete="off"><button class="btn ghost" type="submit">Send</button></form>
+      </details>
+    </div>
+  </div>
+
+  <p class="safety"><b>Safety:</b> wear the Octopus 16 on a power bank only, never while it's plugged into a computer or charger. Never connect the relay to mains. Focus and relax are uncalibrated learning indicators, not a diagnosis. Starter board: Elecrow All-in-One Starter Kit for Arduino. Octopus 16, OctoBio firmware and this studio: PiEEG.</p>
+</div>
+
+<script id="dspWorker" type="text/plain">(function(){let e=[{name:`delta`,sdk:`Delta`,low:.5,high:4},{name:`theta`,sdk:`Theta`,low:4,high:8},{name:`alpha`,sdk:`Alpha`,low:8,high:13},{name:`beta`,sdk:`Beta`,low:13,high:30},{name:`gamma`,sdk:`Gamma`,low:30,high:40}];function t(e,t){return{re:e.re+t.re,im:e.im+t.im}}function n(e,t){return{re:e.re-t.re,im:e.im-t.im}}function r(e,t){return{re:e.re*t.re-e.im*t.im,im:e.re*t.im+e.im*t.re}}function i(e,t){let n=t.re*t.re+t.im*t.im;return{re:(e.re*t.re+e.im*t.im)/n,im:(e.im*t.re-e.re*t.im)/n}}function a(e){let t=Math.hypot(e.re,e.im),n=Math.sqrt((t+e.re)/2),r=Math.sqrt((t-e.re)/2);return e.im<0&&(r=-r),{re:n,im:r}}function o(e){let t=1e-9,n=e.map(()=>!1),r=[];for(let i=0;i<e.length;i++){if(n[i])continue;let a=e[i];if(n[i]=!0,Math.abs(a.im)<t){let o=-1;for(let r=i+1;r<e.length;r++)if(!n[r]&&Math.abs(e[r].im)<t){o=r;break}o>=0?(n[o]=!0,r.push([{re:a.re,im:0},{re:e[o].re,im:0}])):r.push([{re:a.re,im:0},{re:0,im:0}])}else{let t=-1,o=1/0;for(let r=i+1;r<e.length;r++){if(n[r])continue;let i=Math.abs(e[r].re-a.re)+Math.abs(e[r].im+a.im);i<o&&(o=i,t=r)}t>=0?(n[t]=!0,r.push([a,e[t]])):r.push([a,{re:a.re,im:-a.im}])}}return r}function s(e,s,c,l){let u=e=>2*l*Math.tan(Math.PI*e/l),d=u(s),f=u(c),p=f-d,m=d*f,h=[];for(let t=0;t<e;t++){let n=Math.PI*(2*t+e+1)/(2*e);h.push({re:Math.cos(n),im:Math.sin(n)})}let g=[];for(let e of h){let o={re:p*e.re,im:p*e.im},s=a(n(r(o,o),{re:4*m,im:0}));g.push(i(t(o,s),{re:2,im:0})),g.push(i(n(o,s),{re:2,im:0}))}let _=2*l,v=o(g.map(e=>i(t({re:_,im:0},e),n({re:_,im:0},e)))).map(([e,t])=>({b0:1,b1:0,b2:-1,a1:-(e.re+t.re),a2:e.re*t.re-e.im*t.im})),y=2*Math.PI*Math.sqrt(s*c)/l,b={re:Math.cos(-y),im:Math.sin(-y)},x=r(b,b),S={re:1,im:0};for(let e of v){let n=t(t({re:e.b0,im:0},r({re:e.b1,im:0},b)),r({re:e.b2,im:0},x)),a=t(t({re:1,im:0},r({re:e.a1,im:0},b)),r({re:e.a2,im:0},x));S=r(S,i(n,a))}let C=Math.hypot(S.re,S.im),w=C>0?1/C:1;return v.length>0&&(v[0].b0*=w,v[0].b1*=w,v[0].b2*=w),v}var c=class{sections;s1;s2;constructor(e){this.sections=e,this.s1=new Float64Array(e.length),this.s2=new Float64Array(e.length)}process(e){let t=e;for(let e=0;e<this.sections.length;e++){let n=this.sections[e],r=n.b0*t+this.s1[e];this.s1[e]=n.b1*t-n.a1*r+this.s2[e],this.s2[e]=n.b2*t-n.a2*r,t=r}return t}},l=class{bufs;n;w;windowSize;nSigma;constructor(e,t,n){this.windowSize=t,this.nSigma=n,this.bufs=Array.from({length:e},()=>new Float64Array(t)),this.n=new Int32Array(e),this.w=new Int32Array(e)}apply(e,t){let n=this.bufs[e],r=this.n[e],i=t;if(r>=this.windowSize){let e=u(n),r=d(n,e),a=this.nSigma*1.4826*Math.max(r,2);Math.abs(t-e)>a&&(i=e)}return n[this.w[e]]=t,this.w[e]=(this.w[e]+1)%this.windowSize,this.n[e]<this.windowSize&&this.n[e]++,i}};function u(e){let t=Array.from(e).sort((e,t)=>e-t),n=t.length;return n%2==1?t[(n-1)/2]:(t[n/2-1]+t[n/2])/2}function d(e,t){let n=Array.from(e,e=>Math.abs(e-t)).sort((e,t)=>e-t),r=n.length;return r%2==1?n[(r-1)/2]:(n[r/2-1]+n[r/2])/2}var f=class{size;sampleRate;window;real;imag;constructor(e,t){this.size=e,this.sampleRate=t,this.window=new Float64Array(e),this.real=new Float64Array(e),this.imag=new Float64Array(e);for(let t=0;t<e;t++)this.window[t]=.5*(1-Math.cos(2*Math.PI*t/(e-1)))}analyse(t){let n=this.size;for(let e=0;e<n;e++)this.real[e]=t[e]*this.window[e],this.imag[e]=0;let r=0;for(let e=0;e<n;e++){if(e<r){let t=this.real[e];this.real[e]=this.real[r],this.real[r]=t;let n=this.imag[e];this.imag[e]=this.imag[r],this.imag[r]=n}let t=n>>1;for(;t>0&&t<=r;)r-=t,t>>=1;r+=t}for(let e=2;e<=n;e<<=1){let t=e>>1,r=-2*Math.PI/e,i=Math.cos(r),a=Math.sin(r);for(let r=0;r<n;r+=e){let e=1,n=0;for(let o=0;o<t;o++){let s=r+o+t,c=r+o,l=this.real[s]*e-this.imag[s]*n,u=this.real[s]*n+this.imag[s]*e;this.real[s]=this.real[c]-l,this.imag[s]=this.imag[c]-u,this.real[c]+=l,this.imag[c]+=u;let d=e*i-n*a;n=e*a+n*i,e=d}}}let i={delta:0,theta:0,alpha:0,beta:0,gamma:0},a={delta:0,theta:0,alpha:0,beta:0,gamma:0},o=n/2,s=n*this.sampleRate;for(let t=0;t<o;t++){let r=t*this.sampleRate/n,o=(this.real[t]*this.real[t]+this.imag[t]*this.imag[t])/s;for(let t of e)r>=t.low&&r<=t.high&&(i[t.name]+=o,a[t.name]++)}for(let t of e)i[t.name]=a[t.name]>0?i[t.name]/a[t.name]:0;return i}};function p(e){if(e.length<51)return[];let t=[];for(let n=0;n+51<=e.length&&e[n]===160&&e[n+51-1]===192;n+=51){let r=Array(16);for(let t=0;t<16;t++){let i=n+2+t*3,a=e[i]<<16|e[i+1]<<8|e[i+2];a>=8388608&&(a-=16777216),r[t]=Math.round(a*.035762791128491296*100)/100}t.push(r)}return t}var m=class{hampel=new l(16,5,3);biquads;rings=Array.from({length:16},()=>/* @__PURE__ */ new Float64Array(512));write=0;filled=0;fft=new f(256,250);scratch=/* @__PURE__ */ new Float64Array(256);arrived=0;arrivedAt=0;hz=0;constructor(){let e=s(5,1,40,250);this.biquads=Array.from({length:16},()=>new c(e))}reset(){this.hampel=new l(16,5,3);let e=s(5,1,40,250);this.biquads=Array.from({length:16},()=>new c(e)),this.write=0,this.filled=0,this.arrived=0,this.arrivedAt=0,this.hz=0}push(e){let t=Math.min(e.length,16),n=this.write;for(let r=0;r<t;r++){let t=this.hampel.apply(r,e[r]);this.rings[r][n]=this.biquads[r].process(t)}this.write=(n+1)%512,this.filled<512&&this.filled++,this.arrived++}snapshot(){let t=Date.now();this.arrivedAt===0&&(this.arrivedAt=t);let n=t-this.arrivedAt;if(n>=500&&(this.hz=this.arrived*1e3/n,this.arrived=0,this.arrivedAt=t),this.filled<256)return null;let r={delta:0,theta:0,alpha:0,beta:0,gamma:0},i=0,a=0;for(let t=0;t<16;t++){h(this.rings[t],this.write,this.scratch);let n=0;for(let e=0;e<256;e++)n+=this.scratch[e]*this.scratch[e];let o=Math.sqrt(n/256);if(o<.5||o>500)continue;let s=this.fft.analyse(this.scratch);i++,a+=o;for(let t of e)r[t.name]+=s[t.name]}if(i===0)return{delta:0,theta:0,alpha:0,beta:0,gamma:0,focus:0,relax:0,rms:0,hz:this.hz,ok:!1,dom:`delta`};let o={delta:r.delta/i,theta:r.theta/i,alpha:r.alpha/i,beta:r.beta/i,gamma:r.gamma/i},s=o.delta+o.theta+o.alpha+o.beta+o.gamma,c={delta:s>0?o.delta/s:0,theta:s>0?o.theta/s:0,alpha:s>0?o.alpha/s:0,beta:s>0?o.beta/s:0,gamma:s>0?o.gamma/s:0},l=o.beta+o.theta,u=o.alpha+o.beta,d=`delta`,f=-1;for(let t of e)c[t.name]>f&&(f=c[t.name],d=t.name);let p=a/i;return{...c,focus:l>0?o.beta/l:.5,relax:u>0?o.alpha/u:.5,rms:p,hz:this.hz,ok:p>=2&&p<=200,dom:d}}};function h(e,t,n){let r=n.length,i=(t-r+e.length)%e.length;for(let t=0;t<r;t++)n[t]=e[(i+t)%e.length]}let g=new m;self.onmessage=e=>{let t=e.data;if(t.type===`reset`){g.reset();return}if(t.type===`batch`&&t.packets)for(let e of t.packets){let t=p(e);for(let e of t)g.push(e)}},setInterval(()=>{let e=g.snapshot();e&&self.postMessage(e)},80)})();</script>
+<script>
+"use strict";
+(() => {
+const $ = (s) => document.querySelector(s);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const esc = (s) => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+const now = () => performance.now();
+
+/* ============================================================
+   Serial log
+   ============================================================ */
+const serialEl = $('#serial'); let logLines = 0;
+function slog(dir, text) {
+  const cls = dir === '>' ? 'o' : dir === '<' ? 'i' : 'n';
+  serialEl.insertAdjacentHTML('beforeend', `<span class="${cls}">${dir} ${esc(text)}</span>\n`);
+  logLines++; if (logLines % 50 === 0) { const parts = serialEl.innerHTML.split('\n'); if (parts.length > 400) serialEl.innerHTML = parts.slice(-300).join('\n'); }
+  $('#logCount').textContent = logLines + ' lines';
+  if ($('#logBox').open) serialEl.scrollTop = serialEl.scrollHeight;
+}
+
+/* ============================================================
+   Starter kit: OctoBio firmware over Web Serial (115200, line protocol)
+   lines: "KIND key=value key=value"  KIND = INF | DAT | OK | EVT
+   ============================================================ */
+const BAUD = 115200;
+function parseLine(line) { const parts = line.trim().split(/\s+/); const kind = parts.shift() || ''; const f = {}; for (const p of parts) { const i = p.indexOf('='); if (i > 0) f[p.slice(0, i)] = p.slice(i + 1); } return { kind, fields: f, raw: line }; }
+
+class KitLink {
+  constructor() { this.port = null; this.reader = null; this.closed = true; this.ready = false; this.fields = {}; this.lastDat = 0; this.datCount = 0; this.datRate = 0; this.chain = Promise.resolve(); this.onChange = () => {}; this.sim = null; }
+  get open() { return !this.closed; }
+  async connect() {
+    if (!('serial' in navigator)) throw new Error('Web Serial is not available in this browser. Use desktop Chrome or Edge.');
+    const port = await navigator.serial.requestPort();
+    await this._openPort(port);
+  }
+  async _openPort(port) {
+    this.ready = false; this.fields = {};
+    step('kit', 'port', 'busy'); kitMsg('Opening the port…');
+    await port.open({ baudRate: BAUD });
+    this.port = port; this.closed = false; this.chain = Promise.resolve();
+    step('kit', 'port', 'done'); step('kit', 'ready', 'busy');
+    kitMsg('Port open. Waiting for the OctoBio firmware (the board restarts)…');
+    this._readLoop(port).catch(() => {});
+    const ok = await this._waitReady(4500);
+    if (!ok) {
+      step('kit', 'ready', 'fail');
+      kitMsg('No reply from the OctoBio firmware. Flash it once in octoBridge (Flash page), close other serial monitors, then reconnect.', 'bad');
+    } else {
+      step('kit', 'ready', 'done');
+      kitMsg('Firmware answered: INF protocol=1 ready. Starting readings…');
+    }
+    await this.send('STREAM 250');
+    this.onChange();
+  }
+  _waitReady(ms) { return new Promise(res => { const t0 = now(); const iv = setInterval(() => { if (this.ready) { clearInterval(iv); res(true); } else if (now() - t0 > ms || this.closed) { clearInterval(iv); res(this.ready); } }, 50); }); }
+  async _readLoop(port) {
+    const dec = new TextDecoder(); let buf = '';
+    this.reader = port.readable.getReader();
+    try {
+      while (!this.closed) {
+        const { value, done } = await this.reader.read(); if (done) break; if (!value) continue;
+        buf += dec.decode(value, { stream: true });
+        let i; while ((i = buf.indexOf('\n')) >= 0) { const line = buf.slice(0, i).replace(/\r$/, ''); buf = buf.slice(i + 1); if (line) this._line(line); }
+      }
+    } catch (e) { slog('·', 'read stopped: ' + e.message); }
+    finally { try { this.reader.releaseLock(); } catch (e) {} this.reader = null; if (!this.closed) this._lost(); }
+  }
+  _line(line) {
+    const m = parseLine(line);
+    if (m.kind !== 'DAT') slog('<', line);
+    if (m.kind === 'INF' && (m.fields.protocol === '1' || /ready/.test(line))) this.ready = true;
+    if (m.kind === 'DAT' || m.kind === 'OK' || m.kind === 'EVT') Object.assign(this.fields, m.fields);
+    if (m.kind === 'DAT') { this.lastDat = now(); this.datCount++; if (this.datCount % 20 === 1) slog('<', line + '   (every 20th DAT line shown)'); }
+    if (m.kind === 'ERR') kitMsg('Kit replied: ' + line, 'bad');
+    this.onChange();
+  }
+  send(cmd) {
+    if (this.sim) { slog('>', cmd); this.sim.command(cmd); return Promise.resolve(); }
+    if (!this.port || this.closed) return Promise.resolve();
+    const run = async () => { const w = this.port.writable.getWriter(); try { await w.write(new TextEncoder().encode(cmd + '\n')); slog('>', cmd); } finally { w.releaseLock(); } };
+    this.chain = this.chain.then(run, run); return this.chain;
+  }
+  async disconnect() {
+    if (this.sim) { this.sim.stop(); this.sim = null; this.closed = true; this.ready = false; this.onChange(); return; }
+    if (this.port && !this.closed) { try { await this.send('STREAM 0'); } catch (e) {} }
+    this.closed = true; try { await this.reader?.cancel(); } catch (e) {} try { await this.port?.close(); } catch (e) {}
+    this.port = null; this.ready = false; this.onChange();
+  }
+  _lost() { this.closed = true; this.ready = false; this.port = null; kitMsg('The kit was unplugged or the port closed.', 'bad'); this.onChange(); }
+  startSim() { this.sim = new SimKit(this); this.closed = false; this.ready = false; step('kit', 'port', 'done'); setTimeout(() => this._line('INF protocol=1 ready'), 400); setTimeout(() => this.send('STREAM 250'), 450); this.onChange(); }
+}
+
+/* ============================================================
+   Octopus 16 over Web Bluetooth (51-byte packets, 0xA0 … 0xC0)
+   ============================================================ */
+const SERVICE = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
+const NOTIFY = 'beb5483e-36e1-4688-b7f5-ea07361b26a8';
+const UV = 1.2 / 4.0 / 8388607 * 1e6;
+class OctoLink {
+  constructor() { this.device = null; this.char = null; this.worker = null; this.queue = []; this.pk = 0; this.pkRate = 0; this.lastPk = 0; this.bad = 0; this.samples = new Array(16).fill(0); this.ring = Array.from({ length: 16 }, () => new Float32Array(750)); this.ri = 0; this.mean = new Float64Array(16); this.zeroHi = 0; this.res = null; this.onChange = () => {}; this.sim = null; this.name = null; }
+  get linked() { return !!(this.char || this.sim); }
+  _startWorker() {
+    this.stopWorker();
+    const src = document.getElementById('dspWorker').textContent;
+    this.worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+    this.worker.onmessage = (e) => { this.res = e.data; this.onChange(); };
+    this.flushT = setInterval(() => { if (this.queue.length) { this.worker.postMessage({ type: 'batch', packets: this.queue }); this.queue = []; } }, 40);
+  }
+  stopWorker() { if (this.worker) { this.worker.terminate(); this.worker = null; } clearInterval(this.flushT); this.res = null; }
+  async connect() {
+    if (!('bluetooth' in navigator)) throw new Error('Web Bluetooth is not available in this browser. Use desktop Chrome or Edge.');
+    step('octo', 'pair', 'busy'); octoMsg('Choose Octopus-16-XXXX in the Bluetooth list…');
+    const dev = await navigator.bluetooth.requestDevice({ filters: [{ services: [SERVICE] }, { namePrefix: 'Octopus' }, { namePrefix: 'Octopos' }, { namePrefix: 'bioron' }, { namePrefix: 'PiEEG' }], optionalServices: [SERVICE] });
+    this.device = dev; this.name = dev.name || 'Octopus 16';
+    step('octo', 'pair', 'done'); step('octo', 'gatt', 'busy'); octoMsg('Connecting to ' + this.name + '…');
+    dev.addEventListener('gattserverdisconnected', this._drop = () => this._lost());
+    const server = await dev.gatt.connect();
+    const ch = await (await server.getPrimaryService(SERVICE)).getCharacteristic(NOTIFY);
+    step('octo', 'gatt', 'done'); step('octo', 'data', 'busy'); octoMsg('EEG service found. Waiting for data…');
+    this._startWorker();
+    ch.addEventListener('characteristicvaluechanged', this._val = (e) => { const v = e.target.value; this.packet(new Uint8Array(v.buffer, v.byteOffset, v.byteLength).slice()); });
+    await ch.startNotifications();
+    this.char = ch; this.onChange();
+  }
+  packet(b) {
+    if (b.length < 51 || b[0] !== 0xA0 || b[50] !== 0xC0) { this.bad++; return; }
+    this.queue.push(b); this.pk++; this.lastPk = now();
+    let hiZero = true;
+    for (let c = 0; c < 16; c++) {
+      const p = 2 + c * 3; let raw = (b[p] << 16) | (b[p + 1] << 8) | b[p + 2]; if (raw >= 0x800000) raw -= 0x1000000;
+      const uv = raw * UV; this.samples[c] = uv; if (c >= 8 && raw !== 0) hiZero = false;
+      this.mean[c] += (uv - this.mean[c]) * 0.01; this.ring[c][this.ri] = uv - this.mean[c];
+    }
+    this.zeroHi = hiZero ? this.zeroHi + 1 : 0;
+    this.ri = (this.ri + 1) % 750;
+  }
+  async disconnect() {
+    if (this.sim) { this.sim.stop(); this.sim = null; }
+    try { this.char?.removeEventListener('characteristicvaluechanged', this._val); await this.char?.stopNotifications(); } catch (e) {}
+    try { this.device?.removeEventListener('gattserverdisconnected', this._drop); if (this.device?.gatt?.connected) this.device.gatt.disconnect(); } catch (e) {}
+    this.char = null; this.device = null; this.stopWorker(); this.onChange();
+  }
+  _lost() { this.char = null; this.stopWorker(); octoMsg('Bluetooth link dropped. Check the power bank and press Connect again.', 'bad'); this.onChange(); }
+  startSim() { this.name = 'Octopus-16-DEMO'; step('octo', 'pair', 'done'); step('octo', 'gatt', 'done'); this._startWorker(); this.sim = new SimOcto(this); this.onChange(); }
+}
+
+/* ============================================================
+   Demo mode: simulated devices that speak the same protocols
+   ============================================================ */
+class SimKit {
+  constructor(link) { this.link = link; this.period = 0; this.t = null; }
+  command(cmd) {
+    const [c, ...rest] = cmd.trim().split(/\s+/); const arg = rest.join(' ');
+    if (c === 'STREAM') { clearInterval(this.t); this.period = +arg || 0; if (this.period) this.t = setInterval(() => this.dat(), this.period); }
+    setTimeout(() => this.link._line('OK ' + cmd.split(' ')[0].toLowerCase() + '=1'), 15);
+  }
+  dat() {
+    const dark = $('#simDark').checked, n = (a) => Math.round(a);
+    const f = { pot: n(+$('#simKnob').value + (Math.random() * 4 - 2)), lux: dark ? 3 : n(310 + Math.random() * 8), dist_cm: (+$('#simDist').value + Math.random() * .4).toFixed(1), temp_c: (23.4 + Math.random() * .1).toFixed(2), hum: (41.2 + Math.random() * .2).toFixed(1), moisture: n(620 + Math.random() * 6), sound: n(140 + Math.random() * 40), button: $('#simBtn').checked ? 1 : 0, pir: $('#simPir').checked ? 1 : 0, ir: '-', ax: n(Math.random() * 200 - 100), ay: n(Math.random() * 200 - 100), az: 16300 };
+    this.link._line('DAT ' + Object.entries(f).map(([k, v]) => k + '=' + v).join(' '));
+  }
+  stop() { clearInterval(this.t); }
+}
+class SimOcto {
+  constructor(link) { this.link = link; this.t0 = now(); this.n = 0; this.blinkUntil = 0; this.p = new Float64Array(16); this.iv = setInterval(() => this.tick(), 20); }
+  tick() {
+    const target = Math.floor((now() - this.t0) / 1000 * 250);
+    const eyes = $('#simEyes').checked, focus = $('#simFocus').checked;
+    while (this.n < target) {
+      const t = this.n / 250, b = new Uint8Array(51); b[0] = 0xA0; b[1] = this.n & 255; b[50] = 0xC0;
+      for (let c = 0; c < 16; c++) {
+        this.p[c] = .97 * this.p[c] + .25 * (Math.random() * 2 - 1);
+        let v = this.p[c] * 9 + (eyes ? 24 : 5) * Math.sin(2 * Math.PI * 10 * t + c * .2) + (focus ? 10 : 3) * Math.sin(2 * Math.PI * 21 * t + c) + 4 * Math.sin(2 * Math.PI * 1.5 * t) + 400;
+        if (now() < this.blinkUntil && c < 4) v += 150;
+        let raw = Math.round(v / UV); if (raw < 0) raw += 0x1000000; const p = 2 + c * 3; b[p] = raw >> 16 & 255; b[p + 1] = raw >> 8 & 255; b[p + 2] = raw & 255;
+      }
+      this.link.packet(b); this.n++;
+    }
+  }
+  stop() { clearInterval(this.iv); }
+}
+
+/* ============================================================
+   UI: device status
+   ============================================================ */
+function step(dev, s, state) { const el = document.querySelector(`#${dev}Steps [data-s="${s}"]`); if (!el) return; el.className = 'step' + (state ? ' ' + state : ''); el.querySelector('i').textContent = state === 'done' ? '✓' : state === 'fail' ? '!' : ''; }
+function resetSteps(dev) { document.querySelectorAll(`#${dev}Steps .step`).forEach(e => { e.className = 'step'; e.querySelector('i').textContent = ''; }); }
+const msgSet = (id) => (t, cls) => { const e = $(id); e.textContent = t; e.className = 'msg' + (cls ? ' ' + cls : ''); };
+const kitMsg = msgSet('#kitMsg'), octoMsg = msgSet('#octoMsg');
+
+const kitL = new KitLink(), octoL = new OctoLink();
+let demo = false;
+
+$('#kitConnect').addEventListener('click', async () => {
+  if (kitL.open) { await kitL.disconnect(); resetSteps('kit'); kitMsg('Disconnected.'); paintKit(); return; }
+  if (demo) { kitL.startSim(); return; }
+  $('#kitConnect').disabled = true;
+  try { await kitL.connect(); }
+  catch (e) { resetSteps('kit'); kitMsg(e.name === 'NotFoundError' ? 'No port chosen. Press Connect and pick the kit (CH340 / USB serial).' : 'Could not open the port: ' + e.message + ' Close other programs using it (Arduino IDE, octoBridge tab) and try again.', 'bad'); }
+  finally { $('#kitConnect').disabled = false; paintKit(); }
+});
+$('#octoConnect').addEventListener('click', async () => {
+  if (octoL.linked) { await octoL.disconnect(); resetSteps('octo'); octoMsg('Disconnected.'); paintOcto(); return; }
+  if (demo) { octoL.startSim(); return; }
+  $('#octoConnect').disabled = true;
+  try { await octoL.connect(); }
+  catch (e) { await octoL.disconnect(); resetSteps('octo'); octoMsg(e.name === 'NotFoundError' ? 'No device chosen. Is it powered and blinking slowly? Press Connect again.' : 'Bluetooth error: ' + e.message, 'bad'); }
+  finally { $('#octoConnect').disabled = false; paintOcto(); }
+});
+$('#kitTest').addEventListener('click', async () => { await kitL.send('LED FLASH'); await kitL.send('BUZZER ON'); mirror.led = 'flash'; mirror.buzz = true; paintMirror(); setTimeout(async () => { await kitL.send('BUZZER OFF'); await kitL.send('LED OFF'); mirror.led = false; mirror.buzz = false; paintMirror(); }, 600); });
+
+function paintKit() {
+  const open = kitL.open, live = open && now() - kitL.lastDat < 2000;
+  $('#kitConnect').textContent = open ? 'Disconnect' : 'Connect';
+  $('#kitTest').disabled = !(open && kitL.ready);
+  const b = $('#kitBadge'); b.textContent = live && kitL.ready ? 'CONFIRMED' : open ? (kitL.ready ? 'READY' : 'OPEN') : 'OFF'; b.className = 'badge' + (live && kitL.ready ? ' live' : '');
+  if (open && kitL.ready) step('kit', 'ready', 'done');
+  if (open) step('kit', 'data', live ? 'done' : (kitL.ready ? 'busy' : ''));
+  if (live && kitL.ready) kitMsg(`Confirmed: OctoBio firmware (protocol 1) is answering and sending ${kitL.datRate.toFixed(1)} readings/s.${demo ? ' (demo)' : ''}`, 'ok');
+  else if (open && kitL.ready && kitL.lastDat && now() - kitL.lastDat >= 2000) kitMsg('Firmware answered, but readings stopped. Check the cable.', 'bad');
+}
+function paintOcto() {
+  const linked = octoL.linked, flowing = linked && now() - octoL.lastPk < 1000;
+  $('#octoConnect').textContent = linked ? 'Disconnect' : 'Connect';
+  const b = $('#octoBadge'); b.textContent = flowing ? 'CONFIRMED' : linked ? 'LINKED' : 'OFF'; b.className = 'badge' + (flowing ? ' live' : '');
+  if (!linked) return;
+  step('octo', 'data', flowing ? 'done' : 'busy');
+  if (flowing) {
+    const eight = octoL.zeroHi > 50;
+    step('octo', 'ch', eight ? 'fail' : 'done');
+    octoMsg(eight ? `Data flowing (${octoL.pkRate.toFixed(0)} /s), but channels 9–16 read zero: the second ADC isn't seen. Reseat the XIAO.` : `Confirmed: ${octoL.name}, 16 channels, ${octoL.pkRate.toFixed(0)} samples/s.${demo ? ' (demo)' : ''}`, eight ? 'bad' : 'ok');
+  } else if (octoL.lastPk === 0) {
+    octoMsg('Connected, but no EEG data yet. If the board LED double-blinks, the XIAO is seated the wrong way round.', '');
+  } else octoMsg('Data stopped. Check the power bank.', 'bad');
+}
+setInterval(() => {
+  kitL.datRate = kitL.datCount / 1; kitL.datCount = 0; octoL.pkRate = octoL.pk; octoL.pk = 0;
+  $('#datRate').textContent = kitL.open ? kitL.datRate.toFixed(0) + ' /s' : '— /s';
+  paintKit(); paintOcto();
+}, 1000);
+
+/* ============================================================
+   Readings + EEG view
+   ============================================================ */
+const RD = [['pot', 'Knob', 'adc', 0], ['lux', 'Light', 'lx', 0], ['dist_cm', 'Distance', 'cm', 1], ['temp_c', 'Temp', '°C', 1], ['hum', 'Humidity', '%', 1], ['sound', 'Sound', 'adc', 0], ['moisture', 'Moisture', 'adc', 0], ['button', 'Button', '', -1], ['pir', 'Motion', '', -1], ['ir', 'IR', '', -2], ['tilt', 'Tilt', '', -3]];
+$('#reads').innerHTML = RD.map(([k, l]) => `<div class="rd stale" id="rd-${k}"><small>${l}</small><b>—</b><span class="k">${k === 'tilt' ? 'ax ay az' : k}</span></div>`).join('');
+function fnum(v) { if (v === undefined || v === '' || v === 'nan') return null; const n = Number(v); return Number.isFinite(n) ? n : null; }
+function tiltOf(f) { const x = fnum(f.ax), y = fnum(f.ay), z = fnum(f.az); if (x === null || y === null || z === null) return null; return x < -6000 ? 'left' : x > 6000 ? 'right' : y > 6000 ? 'forward' : y < -6000 ? 'back' : (Math.abs(x) < 4000 && Math.abs(y) < 4000 && z > 10000 ? 'flat' : null); }
+function paintReads() {
+  const f = kitL.fields, live = kitL.open && now() - kitL.lastDat < 2000;
+  for (const [k, , u, d] of RD) {
+    const el = $('#rd-' + k); let txt = '—';
+    if (k === 'tilt') { const t = tiltOf(f); txt = t || '—'; }
+    else if (d === -1) { if (f[k] !== undefined) txt = f[k] === '1' ? 'YES' : 'no'; }
+    else if (d === -2) { if (f[k] !== undefined) txt = f[k] === '-' ? 'none' : esc(f[k]); }
+    else { const n = fnum(f[k]); if (n !== null) txt = (k === 'dist_cm' && n < 0 ? 'no echo' : n.toFixed(d)) + (u && !(k === 'dist_cm' && n < 0) ? `<u>${u}</u>` : ''); }
+    el.querySelector('b').innerHTML = txt; el.classList.toggle('stale', !live);
+  }
+}
+const BANDS = [['delta', 'δ delta', '#1a395f'], ['theta', 'θ theta', '#2d6290'], ['alpha', 'α alpha', '#00bbd8'], ['beta', 'β beta', '#47a3c4'], ['gamma', 'γ gamma', '#8fd3e6']];
+$('#bands').innerHTML = BANDS.map(([k, l, c]) => `<div class="band" style="--c:${c}"><small>${l}<b id="bv-${k}">—</b></small><div class="bar"><i id="bb-${k}"></i></div></div>`).join('');
+function paintEEG() {
+  const r = octoL.res, flowing = octoL.linked && now() - octoL.lastPk < 1000;
+  for (const [k] of BANDS) { const v = r && flowing ? r[k] : 0; $('#bv-' + k).textContent = r && flowing ? Math.round(v * 100) + '%' : '—'; $('#bb-' + k).style.width = (v * 100) + '%'; }
+  const okB = $('#eegOkBadge');
+  if (r && flowing) { okB.textContent = r.ok ? 'EEG OK' : 'CHECK CONTACT'; okB.className = 'badge' + (r.ok ? ' live' : ''); }
+  else { okB.textContent = 'NO SIGNAL'; okB.className = 'badge'; }
+  $('#eegStats').innerHTML = r && flowing ? `focus <b>${r.focus.toFixed(2)}</b> relax <b>${r.relax.toFixed(2)}</b> RMS <b>${r.rms.toFixed(1)} µV</b> strongest <b>${r.dom}</b> rate <b>${octoL.pkRate.toFixed(0)} /s</b>` : 'Connect the Octopus 16 to see live band power.';
+}
+const cv = $('#traces'), cx = cv.getContext('2d');
+function drawTraces() {
+  const W = cv.width, H = cv.height; cx.clearRect(0, 0, W, H);
+  const rowH = H / 16, flowing = octoL.linked && now() - octoL.lastPk < 1000;
+  cx.font = '20px JetBrains Mono, monospace';
+  for (let c = 0; c < 16; c++) {
+    const y0 = rowH * (c + .5);
+    cx.strokeStyle = '#e3ecf3'; cx.lineWidth = 1; cx.beginPath(); cx.moveTo(60, y0); cx.lineTo(W, y0); cx.stroke();
+    cx.fillStyle = '#9aaebf'; cx.fillText(String(c + 1).padStart(2, '0'), 12, y0 + 7);
+    if (!flowing) continue;
+    cx.strokeStyle = c < 8 ? '#00bbd8' : '#1a395f'; cx.lineWidth = 1.6; cx.beginPath();
+    const ring = octoL.ring[c], n = 750, sc = (rowH * .45) / 100;
+    for (let i = 0; i < n; i += 2) { const v = ring[(octoL.ri + i) % n]; const x = 60 + i / (n - 1) * (W - 64), y = y0 - clamp(v, -110, 110) * sc; i ? cx.lineTo(x, y) : cx.moveTo(x, y); }
+    cx.stroke();
+  }
+  cx.fillStyle = '#9aaebf'; cx.fillText(flowing ? '±100 µV per row · last 3 s' : 'No EEG data', W - (flowing ? 330 : 160), H - 8);
+}
+
+/* ============================================================
+   Output mirror (what we commanded)
+   ============================================================ */
+const mirror = { led: false, led2: false, servo: null, lcd: ['', ''], buzz: false, relay: false };
+let sceneDirty = true, lastCmd = null, lastKey = 'lcd';
+function paintMirror() { sceneDirty = true; }
+function trackCmd(cmd) {
+  const [c, ...r] = cmd.trim().split(/\s+/); const a = r.join(' '), on = a.toUpperCase() === 'ON';
+  if (c === 'LED') mirror.led = a.toUpperCase() === 'FLASH' ? 'flash' : on;
+  else if (c === 'LED2') mirror.led2 = on; else if (c === 'BUZZER') mirror.buzz = on; else if (c === 'RELAY') mirror.relay = on;
+  else if (c === 'SERVO') mirror.servo = clamp(Math.round(+a || 0), 0, 180);
+  else if (c === 'LCD') mirror.lcd[0] = cmd.slice(4); else if (c === 'LCD2') mirror.lcd[1] = cmd.slice(5);
+  const KEY = { LED: 'led', LED2: 'led8', BUZZER: 'buzzer', RELAY: 'relay', SERVO: 'servo', LCD: 'lcd', LCD2: 'lcd' };
+  if (KEY[c]) { lastKey = KEY[c]; lastCmd = cmd; }
+  cmdLog.push({ cmd, t: now() }); if (cmdLog.length > 600) cmdLog.splice(0, 200);
+  paintMirror();
+}
+const rawSend = kitL.send.bind(kitL);
+kitL.send = (cmd) => { if (kitL.open) trackCmd(cmd); return rawSend(cmd); };
+
+// manual controls
+document.querySelectorAll('[data-cmd]').forEach(b => b.addEventListener('click', async () => { const c = b.dataset.cmd; if (c === 'BEEP') { await kitL.send('BUZZER ON'); setTimeout(() => kitL.send('BUZZER OFF'), 250); } else kitL.send(c); }));
+let servoT = 0; $('#manServo').addEventListener('input', (e) => { clearTimeout(servoT); servoT = setTimeout(() => kitL.send('SERVO ' + e.target.value), 60); });
+$('#manLcdBtn').addEventListener('click', () => kitL.send('LCD ' + $('#manLcd').value.slice(0, 16)));
+$('#rawForm').addEventListener('submit', (e) => { e.preventDefault(); const v = $('#rawCmd').value.trim(); if (v) { kitL.send(v); $('#rawCmd').value = ''; } });
+
+/* ============================================================
+   Script runtime
+   ============================================================ */
+const consoleEl = $('#console');
+function out(html) { consoleEl.insertAdjacentHTML('beforeend', html + '\n'); const parts = consoleEl.innerHTML.split('\n'); if (parts.length > 300) consoleEl.innerHTML = parts.slice(-250).join('\n'); consoleEl.scrollTop = consoleEl.scrollHeight; }
+const fmt = (v) => typeof v === 'number' ? (Number.isInteger(v) ? String(v) : v.toFixed(3)) : typeof v === 'object' ? JSON.stringify(v) : String(v);
+let run = null; const userVals = new Map();
+class StopSignal extends Error { constructor() { super('stopped'); this.name = 'StopSignal'; } }
+
+function makeKitApi(r) {
+  const last = {}; let servoPend = null, servoTimer = 0;
+  const live = () => { if (!r.alive) throw new StopSignal(); };
+  const put = (key, cmd) => { live(); if (last[key] === cmd) return; last[key] = cmd; kitL.send(cmd); };
+  const f = () => kitL.fields;
+  return {
+    get connected() { return kitL.open && kitL.ready; },
+    get knob() { return fnum(f().pot); }, get light() { return fnum(f().lux); }, get distance() { return fnum(f().dist_cm); },
+    get temperature() { return fnum(f().temp_c); }, get humidity() { return fnum(f().hum); }, get sound() { return fnum(f().sound); }, get moisture() { return fnum(f().moisture); },
+    get button() { return f().button === '1'; }, get motion() { return f().pir === '1'; },
+    get ir() { const v = f().ir; return v === undefined || v === '' || v === '-' ? null : v; },
+    get accel() { return { x: fnum(f().ax), y: fnum(f().ay), z: fnum(f().az) }; }, get tilt() { return tiltOf(f()); },
+    get fields() { return { ...f() }; },
+    led(on) { put('led', on === 'flash' ? 'LED FLASH' : on ? 'LED ON' : 'LED OFF'); },
+    led2(on) { put('led2', on ? 'LED2 ON' : 'LED2 OFF'); },
+    buzzer(on) { put('buzz', on ? 'BUZZER ON' : 'BUZZER OFF'); },
+    relay(on) { put('relay', on ? 'RELAY ON' : 'RELAY OFF'); },
+    servo(deg) { live(); const d = clamp(Math.round(+deg || 0), 0, 180); if (last.servo === d) return; last.servo = d; servoPend = d; if (!servoTimer) { servoTimer = setTimeout(() => { servoTimer = 0; if (r.alive && servoPend !== null) kitL.send('SERVO ' + servoPend); }, 50); } },
+    lcd(l1 = '', l2) { put('lcd1', 'LCD ' + String(l1).slice(0, 16)); if (l2 !== undefined) put('lcd2', 'LCD2 ' + String(l2).slice(0, 16)); },
+    send(cmd) { live(); kitL.send(String(cmd)); }
+  };
+}
+function makeEegApi() {
+  const R = () => (octoL.linked && now() - octoL.lastPk < 1000 ? octoL.res : null);
+  const g = (k, d = null) => { const r = R(); return r ? r[k] : d; };
+  return {
+    get connected() { return !!R(); }, get alpha() { return g('alpha'); }, get beta() { return g('beta'); }, get theta() { return g('theta'); }, get delta() { return g('delta'); }, get gamma() { return g('gamma'); },
+    get focus() { return g('focus'); }, get relax() { return g('relax'); }, get rms() { return g('rms'); }, get ok() { return g('ok', false); }, get dom() { return g('dom'); },
+    get hz() { return octoL.pkRate; }, get samples() { return octoL.samples.slice(); }
+  };
+}
+function setRunUI(state, text) {
+  const st = $('#runSt'); st.className = 'st' + (state === 'run' ? ' on' : state === 'err' ? ' err' : ''); st.innerHTML = `<i></i>${text}`;
+  $('#runBtn').disabled = state === 'run'; $('#stopBtn').disabled = state !== 'run';
+}
+function errLine(e) { const m = /<anonymous>:(\d+):(\d+)/.exec(e && e.stack || ''); return m ? (+m[1] - 2) : null; }
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+async function runScript() {
+  if (run) await stopScript(true);
+  const code = $('#code').value; markErr(null);
+  const r = { alive: true, stops: [], timers: new Set(), loops: [], waiters: new Set() };
+  run = r; userVals.clear(); paintUserVals();
+  const wait = (ms) => new Promise((res, rej) => { if (!r.alive) return rej(new StopSignal()); let done = false; const t = setTimeout(() => { done = true; r.timers.delete(t); r.alive ? res() : rej(new StopSignal()); }, Math.max(0, +ms || 0)); r.timers.add(t); const stop = () => { if (!done) { done = true; clearTimeout(t); rej(new StopSignal()); } }; r.waiters.add(stop); setTimeout(() => r.waiters.delete(stop), Math.max(0, +ms || 0) + 5); });
+  const forever = (fn) => { const p = (async () => { while (r.alive) { await fn(); await wait(20); } })(); r.loops.push(p); p.catch(() => {}); return p; };
+  const api = {
+    kit: makeKitApi(r), eeg: makeEegApi(), wait, forever,
+    map: (v, a, b, c, d) => { if (v === null || v === undefined) return null; const t = clamp((v - a) / (b - a), 0, 1); return c + (d - c) * t; },
+    clamp, log: (...a) => out(`<span class="t">[${new Date().toTimeString().slice(0, 8)}]</span> ${esc(a.map(fmt).join(' '))}`),
+    show: (name, value) => { userVals.set(String(name), value); },
+    onStop: (fn) => r.stops.push(() => { try { fn(); } catch (e) {} })
+  };
+  let fn;
+  try { fn = new AsyncFunction(...Object.keys(api), code); }
+  catch (e) { out(`<span class="e">Syntax error: ${esc(e.message)}</span>`); setRunUI('err', 'SYNTAX ERROR'); run = null; return; }
+  if (!kitL.open && !octoL.linked) out('<span class="t">Note: no device connected yet. Readings will be null until you connect (or turn on Demo mode).</span>');
+  out('<span class="s">▶ Script started</span>'); setRunUI('run', 'RUNNING');
+  try { await fn(...Object.values(api)); while (r.alive && r.loops.length) { const ls = r.loops.splice(0); await Promise.all(ls); } if (r.alive) { out('<span class="s">✓ Script finished</span>'); r.alive = false; setRunUI('', 'FINISHED'); } }
+  catch (e) {
+    if (e instanceof StopSignal || !r.alive) return;
+    const ln = errLine(e); out(`<span class="e">Error${ln ? ' on line ' + ln : ''}: ${esc(e.message)}</span>`); markErr(ln);
+    r.alive = false; setRunUI('err', 'ERROR'); safeOff();
+  } finally { if (run === r && !r.alive) run = null; }
+}
+async function stopScript(silent) {
+  const r = run; if (!r) return; r.alive = false; run = null;
+  for (const s of r.stops.splice(0)) { try { s(); } catch (e) {} } r.waiters.forEach(w => w()); r.waiters.clear();
+  r.timers.forEach(clearTimeout);
+  await safeOff();
+  if (!silent) out('<span class="t">■ Stopped. Buzzer and relay switched off.</span>');
+  setRunUI('', 'STOPPED');
+}
+async function safeOff() { if (kitL.open) { if (mirror.buzz) await kitL.send('BUZZER OFF'); if (mirror.relay) await kitL.send('RELAY OFF'); } }
+function paintUserVals() { const el = $('#userVals'); if (!userVals.size) { el.hidden = true; return; } el.hidden = false; el.innerHTML = [...userVals].map(([k, v]) => `<div class="rd"><small>${esc(k)}</small><b>${esc(fmt(v))}</b><span class="k">show()</span></div>`).join(''); }
+$('#runBtn').addEventListener('click', runScript); $('#stopBtn').addEventListener('click', () => stopScript(false));
+
+/* ============================================================
+   Editor
+   ============================================================ */
+const ta = $('#code'), gut = $('#gutter'); let errAt = null;
+function paintGutter() { const n = ta.value.split('\n').length; let s = ''; for (let i = 1; i <= n; i++) s += (i === errAt ? `<span class="err">${i}</span>` : i) + '\n'; gut.innerHTML = s; gut.scrollTop = ta.scrollTop; }
+function markErr(ln) { errAt = ln; paintGutter(); }
+ta.addEventListener('input', () => { paintGutter(); save(); }); ta.addEventListener('scroll', () => { gut.scrollTop = ta.scrollTop; });
+ta.addEventListener('keydown', (e) => {
+  if (e.key === 'Tab') { e.preventDefault(); const s = ta.selectionStart, en = ta.selectionEnd; ta.setRangeText('  ', s, en, 'end'); paintGutter(); save(); }
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); runScript(); }
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && run) stopScript(false); });
+let saveT = 0; function save() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem('octobio-studio-script', ta.value); $('#saveBadge').textContent = 'SAVED IN THIS BROWSER'; } catch (e) { $('#saveBadge').textContent = 'NOT SAVED'; } }, 300); }
+
+const EX = {
+  'Eyes closed → LED on (alpha)': `// Close your eyes: alpha rises over the back of the head, the red LED turns on.
+forever(async () => {
+  const a = eeg.alpha;            // 0..1, null when the Octopus isn't streaming
+  if (a === null) { kit.lcd('Connect Octopus'); return; }
+  kit.led(a > 0.35);
+  kit.lcd('alpha ' + Math.round(a * 100) + '%', a > 0.35 ? 'eyes closed?' : 'eyes open');
+  show('alpha', a);
+  await wait(100);
+});`,
+  'Knob → servo + screen': `// Slide the knob: the servo follows and the screen shows the angle.
+forever(async () => {
+  const k = kit.knob;             // 0..1023
+  if (k === null) return;
+  const angle = Math.round(map(k, 0, 1023, 0, 180));
+  kit.servo(angle);
+  kit.lcd('Angle: ' + angle, 'knob ' + k);
+  await wait(50);
+});`,
+  'Blink LED': `// Your first program: blink LED D10 once a second, 10 times.
+for (let i = 0; i < 10; i++) {
+  kit.led(true);  await wait(500);
+  kit.led(false); await wait(500);
+  log('blink', i + 1);
+}`,
+  'Focus meter (servo needle)': `// Focus = beta / (beta + theta). Uncalibrated: compare with yourself a moment ago.
+forever(async () => {
+  if (!eeg.connected) return;
+  kit.servo(map(eeg.focus, 0.2, 0.8, 0, 180));
+  show('focus', eeg.focus);
+  await wait(100);
+});`,
+  'Quiet room (alpha + motion)': `// Two signals, one decision: eyes closed AND nobody walking past.
+forever(async () => {
+  const quiet = (eeg.alpha ?? 0) > 0.35 && !kit.motion;
+  kit.led2(quiet);
+  kit.lcd(quiet ? 'shh' : 'hello!', quiet ? 'quiet please' : (kit.motion ? 'motion seen' : 'eyes open'));
+  await wait(150);
+});`,
+  'Blink is not a thought (artifacts)': `// Blinks and jaw clenches are muscle: big RMS and gamma.
+forever(async () => {
+  if (!eeg.connected) return;
+  const artifact = eeg.rms > 45 || eeg.gamma > 0.22;
+  kit.lcd(artifact ? 'artifact!' : 'EEG ok', 'RMS ' + eeg.rms.toFixed(0) + ' uV');
+  kit.led(artifact ? 'flash' : false);
+  await wait(100);
+});`,
+  'Distance alarm': `// Closer than 10 cm: beep. A negative distance means no echo.
+forever(async () => {
+  const d = kit.distance;
+  if (d === null) return;
+  kit.buzzer(d > 0 && d < 10);
+  kit.lcd('Distance cm', d < 0 ? 'no echo' : d.toFixed(1));
+  await wait(80);
+});`,
+  'Night light (dark + motion)': `forever(async () => {
+  const dark = (kit.light ?? 999) < 50;
+  kit.led(dark && kit.motion);
+  await wait(100);
+});`,
+  'Print every reading': `// Logs everything once a second. Useful to check sensors.
+forever(async () => {
+  log('knob', kit.knob, 'light', kit.light, 'dist', kit.distance, 'temp', kit.temperature,
+      'btn', kit.button, 'pir', kit.motion, 'tilt', kit.tilt,
+      '| alpha', eeg.alpha, 'rms', eeg.rms);
+  await wait(1000);
+});`
+};
+const sel = $('#examples');
+sel.innerHTML = '<option value="">Load an example…</option>' + Object.keys(EX).map(k => `<option>${esc(k)}</option>`).join('');
+sel.addEventListener('change', () => { if (!sel.value) return; ta.value = EX[sel.value]; sel.value = ''; markErr(null); save(); });
+let saved = null; try { saved = localStorage.getItem('octobio-studio-script'); } catch (e) {}
+ta.value = saved || EX['Eyes closed → LED on (alpha)']; paintGutter();
+
+/* ============================================================
+   Lessons: explanation + script + tasks checked on the real hardware
+   ============================================================ */
+const cmdLog = [];            // {cmd, t}
+const sent = (re, since) => cmdLog.some(c => c.t >= since && re.test(c.cmd));
+const K = () => kitL.fields, kLive = () => kitL.open && kitL.ready && now() - kitL.lastDat < 2000;
+const E = () => (octoL.linked && now() - octoL.lastPk < 1000 ? octoL.res : null);
+const LESSONS = [
+ { id: 'meet', t: 'Meet the kit', part: 'Starter board', hw: 'Starter kit + Octopus 16',
+   about: 'The OctoBio Kit is two boards in one browser tab. The <b>starter board</b> (Elecrow All-in-One Starter Kit for Arduino) has 15 sensors and outputs and talks over USB. The <b>Octopus 16</b> (PiEEG) reads 16 EEG channels over Bluetooth.',
+   tasks: [['Connect the starter kit (firmware answers)', () => kitL.open && kitL.ready], ['Readings are flowing from the kit', () => kLive()], ['Connect the Octopus 16 (data flowing)', () => !!E()], ['Run the script: the screen says hello', (s) => sent(/^LCD Hello/, s)]],
+   code: `// Lesson 1: say hello on the 16x2 screen.
+kit.lcd('Hello, OctoBio!', 'kit is ready');
+log('Knob reads', kit.knob, '· light', kit.light, 'lx');` },
+ { id: 'blink', t: 'Blink an LED', part: 'Starter board', hw: 'Red LED (D10)',
+   about: 'An LED glows when current flows through it. <code>kit.led(true)</code> switches pin D10 on, <code>kit.led(false)</code> switches it off, and <code>await wait(500)</code> holds each state for half a second.',
+   tasks: [['Run the script', (s) => !!run], ['The LED turned on', (s) => sent(/^LED ON/, s)], ['The LED turned off again', (s) => sent(/^LED OFF/, s)], ['Change 500 to 100 and run again: faster blink', (s) => cmdLog.filter(c => c.t >= s && /^LED ON/.test(c.cmd)).length >= 8]],
+   code: `// Lesson 2: blink the red LED 10 times.
+for (let i = 0; i < 10; i++) {
+  kit.led(true);  await wait(500);
+  kit.led(false); await wait(500);
+}` },
+ { id: 'button', t: 'Push a button', part: 'Starter board', hw: 'Button (D7) + LED',
+   about: 'A button is a digital input: <code>kit.button</code> is <code>true</code> while it is pressed. <b>if / else</b> picks one of two actions many times a second.',
+   tasks: [['Run the script', () => !!run], ['Press and hold the green button', () => kLive() && K().button === '1'], ['The LED followed the button', (s) => sent(/^LED ON/, s) && sent(/^LED OFF/, s)]],
+   code: `// Lesson 3: the LED follows the button.
+forever(async () => {
+  if (kit.button) kit.led(true);
+  else kit.led(false);
+  await wait(30);
+});` },
+ { id: 'knob', t: 'Turn a knob', part: 'Starter board', hw: 'Slide potentiometer (A0) + servo (D9)',
+   about: 'A potentiometer is a resistor with a slider. The board reads it as a number from 0 to 1023. <code>map()</code> turns that range into 0–180 degrees for the servo.',
+   tasks: [['Run the script', () => !!run], ['Slide the knob all the way left (below 30)', (s, h) => h.knobLow], ['Slide it all the way right (above 990)', (s, h) => h.knobHigh], ['The servo reached 180°', (s) => sent(/^SERVO 1(7[5-9]|80)$/, s)]],
+   watch: (h) => { const k = Number(K().pot); if (kLive() && Number.isFinite(k)) { if (k < 30) h.knobLow = true; if (k > 990) h.knobHigh = true; } },
+   code: `// Lesson 4: the servo follows the knob.
+forever(async () => {
+  const angle = Math.round(map(kit.knob, 0, 1023, 0, 180));
+  kit.servo(angle);
+  kit.lcd('Angle: ' + angle, 'knob ' + kit.knob);
+  await wait(50);
+});` },
+ { id: 'light', t: 'Sense light', part: 'Starter board', hw: 'Light sensor (BH1750) + LED',
+   about: 'The BH1750 measures light in lux. A room is a few hundred lux; a hand over the sensor drops it near zero. A <b>threshold</b> splits dark from bright.',
+   tasks: [['Run the script', () => !!run], ['Cover the light sensor with your hand (below 50 lx)', (s, h) => h.dark], ['The LED switched on in the dark', (s) => sent(/^LED ON/, s)]],
+   watch: (h) => { const l = Number(K().lux); if (kLive() && Number.isFinite(l) && l < 50) h.dark = true; },
+   code: `// Lesson 5: a smart street light.
+forever(async () => {
+  kit.led(kit.light < 50);
+  kit.lcd('Light: ' + kit.light + ' lx');
+  await wait(100);
+});` },
+ { id: 'distance', t: 'Measure distance', part: 'Starter board', hw: 'Ultrasonic (D6/D5) + buzzer (D3)',
+   about: 'The ultrasonic sensor times a sound echo: distance = speed of sound × time ÷ 2. It needs a facing surface; a missed echo is a <b>negative</b> number, not "far".',
+   tasks: [['Run the script', () => !!run], ['Bring your hand closer than 10 cm', (s, h) => h.near], ['The buzzer sounded', (s) => sent(/^BUZZER ON/, s)]],
+   watch: (h) => { const d = Number(K().dist_cm); if (kLive() && d > 0 && d < 10) h.near = true; },
+   code: `// Lesson 6: an obstacle alarm.
+forever(async () => {
+  const d = kit.distance;
+  kit.buzzer(d > 0 && d < 10);
+  kit.lcd('Distance cm', d < 0 ? 'no echo' : d.toFixed(1));
+  await wait(80);
+});` },
+ { id: 'sound', t: 'Make a sound', part: 'Starter board', hw: 'Sound sensor (A1) + buzzer',
+   about: 'The microphone turns sound into a raw count (0–1023). Loud sounds give big numbers. Clap and the buzzer answers.',
+   tasks: [['Run the script', () => !!run], ['Clap near the sound sensor (above 600)', (s, h) => h.loud], ['The buzzer answered', (s) => sent(/^BUZZER ON/, s)]],
+   watch: (h) => { const v = Number(K().sound); if (kLive() && v > 600) h.loud = true; },
+   code: `// Lesson 7: clap and the buzzer answers.
+forever(async () => {
+  if (kit.sound > 600) { kit.buzzer(true); await wait(300); kit.buzzer(false); }
+  await wait(20);
+});` },
+ { id: 'weather', t: 'Feel the room', part: 'Starter board', hw: 'DHT20 + screen',
+   about: 'The DHT20 measures temperature (°C) and humidity (%) over I²C, the same two wires the light sensor and the screen use.',
+   tasks: [['Run the script', () => !!run], ['The screen shows the temperature', (s) => sent(/^LCD Temp/, s)], ['Warm the sensor with your fingers (+1 °C)', (s, h) => h.warmed]],
+   watch: (h) => { const t = Number(K().temp_c); if (!kLive() || !Number.isFinite(t)) return; if (h.t0 === undefined) h.t0 = t; if (t >= h.t0 + 1) h.warmed = true; },
+   code: `// Lesson 8: a weather station.
+forever(async () => {
+  kit.lcd('Temp ' + kit.temperature.toFixed(1) + ' C', 'Humi ' + kit.humidity.toFixed(1) + ' %');
+  await wait(1000);
+});` },
+ { id: 'motion', t: 'Spot motion', part: 'Starter board', hw: 'PIR motion sensor (A2) + LED',
+   about: 'A PIR sensor sees changes in the heat people give off. <code>kit.motion</code> is true while it detects someone. It needs a few seconds to settle after power-up.',
+   tasks: [['Run the script', () => !!run], ['Wave or walk past the sensor', (s, h) => h.moved], ['The LED switched on', (s) => sent(/^LED ON/, s)]],
+   watch: (h) => { if (kLive() && K().pir === '1') h.moved = true; },
+   code: `// Lesson 9: a motion night light.
+forever(async () => {
+  kit.led(kit.motion);
+  kit.lcd(kit.motion ? 'Someone is here' : 'All quiet');
+  await wait(100);
+});` },
+ { id: 'octopus', t: 'Meet the Octopus 16', part: 'Octopus 16', hw: 'Octopus 16 (worn, battery only)',
+   about: 'Strap the Octopus 16 over the back of the head and press it straight down. Its 16 pogo pins are the electrodes. <b>Power bank only</b> while worn. Watch "EEG ok": RMS between 2 and 200 µV.',
+   tasks: [['Octopus 16 connected, data flowing', () => !!E()], ['EEG ok (good contact)', () => !!(E() && E().ok)], ['The screen shows the strongest band', (s) => sent(/^LCD Top band/, s)]],
+   code: `// Lesson 10: show the strongest EEG band.
+forever(async () => {
+  if (!eeg.connected) { kit.lcd('Connect Octopus'); return; }
+  kit.lcd('Top band: ' + eeg.dom, 'RMS ' + eeg.rms.toFixed(0) + ' uV');
+  await wait(300);
+});` },
+ { id: 'alpha', t: 'Eyes closed, light on', part: 'Octopus 16', hw: 'Octopus 16 + LED',
+   about: 'Close your eyes: the alpha rhythm (8–13 Hz) over the back of the head grows. One rule turns it into a light. Ask a friend to watch the LED, or listen for the change.',
+   tasks: [['Run the script', () => !!run], ['Alpha above 35% (eyes closed ~10 s)', (s, h) => h.alphaHi], ['The LED switched on from your alpha', (s, h) => h.ledByAlpha], ['Open your eyes: alpha drops again', (s, h) => h.alphaHi && h.alphaBack]],
+   watch: (h) => { const r = E(); if (!r) return; if (r.alpha > 0.35) { h.alphaHi = true; if (mirror.led === true) h.ledByAlpha = true; } else if (h.alphaHi && r.alpha < 0.3) h.alphaBack = true; },
+   code: `// Lesson 11: eyes closed -> alpha rises -> LED on.
+forever(async () => {
+  const a = eeg.alpha;
+  if (a === null) { kit.lcd('Connect Octopus'); return; }
+  kit.led(a > 0.35);
+  kit.lcd('alpha ' + Math.round(a * 100) + '%');
+  show('alpha', a);
+  await wait(100);
+});` },
+ { id: 'focus', t: 'Focus meter', part: 'Octopus 16', hw: 'Octopus 16 + servo',
+   about: 'Focus = beta ÷ (beta + theta), mapped onto the servo so the arm is a needle. It is <b>uncalibrated</b>: it means "higher than a moment ago", never a score of a person.',
+   tasks: [['Run the script', () => !!run], ['The needle moved more than 45°', (s, h) => h.servoMax - h.servoMin > 45]],
+   watch: (h) => { if (mirror.servo === null || !run) return; h.servoMin = Math.min(h.servoMin ?? 999, mirror.servo); h.servoMax = Math.max(h.servoMax ?? -1, mirror.servo); },
+   code: `// Lesson 12: a focus needle. Try mental arithmetic, then relax.
+forever(async () => {
+  if (!eeg.connected) return;
+  kit.servo(map(eeg.focus, 0.2, 0.8, 0, 180));
+  show('focus', eeg.focus);
+  await wait(100);
+});` },
+ { id: 'artifact', t: 'Blink is not a thought', part: 'Octopus 16', hw: 'Octopus 16 + screen',
+   about: 'Blinks and jaw clenches are muscle. They show up as big jumps in RMS and gamma. Good scientists spot these <b>artifacts</b> before they trust a reading.',
+   tasks: [['Run the script', () => !!run], ['Blink hard or clench your jaw', (s, h) => h.art], ['The screen flagged "artifact!"', (s) => sent(/^LCD artifact!/, s)], ['Sit still: "EEG ok" again', (s) => sent(/^LCD artifact!/, s) && sent(/^LCD EEG ok/, s)]],
+   watch: (h) => { const r = E(); if (r && (r.rms > 45 || r.gamma > 0.22)) h.art = true; },
+   code: `// Lesson 13: flag muscle artifacts.
+forever(async () => {
+  if (!eeg.connected) return;
+  const artifact = eeg.rms > 45 || eeg.gamma > 0.22;
+  kit.lcd(artifact ? 'artifact!' : 'EEG ok', 'RMS ' + eeg.rms.toFixed(0) + ' uV');
+  await wait(100);
+});` },
+ { id: 'project', t: 'Project: quiet room', part: 'Project', hw: 'Octopus 16 + PIR + screen + light D8',
+   about: 'Two signals, one decision. If your eyes are closed (alpha high) <b>and</b> nobody moves, the screen asks for quiet and light D8 shows "do not disturb". Then change the rule and make it yours.',
+   tasks: [['Run the script', () => !!run], ['Quiet: eyes closed, no motion, D8 on', (s, h) => h.quiet], ['Someone walks past: D8 off', (s, h) => h.quiet && h.broken]],
+   watch: (h) => { const r = E(); if (mirror.led2 && r && r.alpha > 0.35 && K().pir !== '1') h.quiet = true; if (h.quiet && K().pir === '1' && !mirror.led2) h.broken = true; },
+   code: `// Lesson 14: quiet room. Edit the rule and make it your own.
+forever(async () => {
+  const quiet = (eeg.alpha ?? 0) > 0.35 && !kit.motion;
+  kit.led2(quiet);
+  kit.lcd(quiet ? 'shh' : 'hello!', quiet ? 'quiet please' : (kit.motion ? 'motion seen' : 'eyes open'));
+  await wait(150);
+});` }
+];
+let lesIdx = 0, lesStart = now(), lesHist = {};
+let lesDone = {}; try { lesDone = JSON.parse(localStorage.getItem('octobio-studio-lessons') || '{}'); } catch (e) {}
+const saveLes = () => { try { localStorage.setItem('octobio-studio-lessons', JSON.stringify(lesDone)); } catch (e) {} };
+function renderLessonNav() {
+  $('#lesNav').innerHTML = LESSONS.map((l, i) => `<button type="button" class="lchip${i === lesIdx ? ' cur' : ''}${lesDone[l.id] ? ' ok' : ''}" data-i="${i}" title="${esc(l.t)}" aria-label="Lesson ${i + 1}: ${esc(l.t)}">${i + 1}</button>`).join('');
+  const n = LESSONS.filter(l => lesDone[l.id]).length; $('#lesProg').textContent = `${n}/${LESSONS.length} DONE`;
+}
+function openLesson(i, loadCode) {
+  lesIdx = clamp(i, 0, LESSONS.length - 1); const l = LESSONS[lesIdx]; lesStart = now(); lesHist = {};
+  $('#lesBody').innerHTML = `<div class="lk">Lesson ${lesIdx + 1} · ${esc(l.part)} · <span>${esc(l.hw)}</span></div><h3>${esc(l.t)}</h3><p>${l.about}</p>
+    <ol class="tasks" id="lesTasks">${l.tasks.map(([t]) => `<li><i></i><span>${esc(t)}</span></li>`).join('')}</ol>
+    <div class="lesbtns"><button class="btn teal" type="button" id="lesLoad">Load lesson script</button><button class="btn ghost" type="button" id="lesPrev"${lesIdx === 0 ? ' disabled' : ''}>← Previous</button><button class="btn ghost" type="button" id="lesNext">${lesIdx === LESSONS.length - 1 ? 'Back to 1' : 'Next lesson →'}</button></div>`;
+  $('#lesLoad').onclick = () => { ta.value = l.code; markErr(null); save(); paintGutter(); out(`<span class="t">Loaded the script for lesson ${lesIdx + 1}. Press Run.</span>`); };
+  $('#lesPrev').onclick = () => openLesson(lesIdx - 1, true);
+  $('#lesNext').onclick = () => openLesson(lesIdx === LESSONS.length - 1 ? 0 : lesIdx + 1, true);
+  $('#lesBody').classList.toggle('complete', !!lesDone[l.id]);
+  if (loadCode) $('#lesLoad').click();
+  try { localStorage.setItem('octobio-studio-lesson', l.id); } catch (e) {}
+  renderLessonNav();
+}
+function checkLesson() {
+  const l = LESSONS[lesIdx]; if (!l) return; if (l.watch) l.watch(lesHist);
+  const lis = document.querySelectorAll('#lesTasks li'); let all = true;
+  l.tasks.forEach(([, fn], i) => { let ok = false; try { ok = !!fn(lesStart, lesHist); } catch (e) {} if (ok) lesHist['t' + i] = true; const done = !!lesHist['t' + i]; if (!done) all = false; lis[i] && lis[i].classList.toggle('done', done); });
+  if (all && !lesDone[l.id]) { lesDone[l.id] = true; saveLes(); renderLessonNav(); out(`<span class="s">★ Lesson ${lesIdx + 1} complete: ${esc(l.t)}</span>`); const b = document.querySelector('#lesBody'); b && b.classList.add('complete'); }
+}
+
+$('#lesNav').addEventListener('click', (e) => { const b = e.target.closest('.lchip'); if (b) openLesson(+b.dataset.i, false); });
+{ let start = 0; try { const id = localStorage.getItem('octobio-studio-lesson'); start = Math.max(0, LESSONS.findIndex(l => l.id === id)); } catch (e) {} openLesson(start, false); }
+setInterval(checkLesson, 200);
+
+/* ============================================================
+   Demo mode + capability notice
+   ============================================================ */
+$('#demoBtn').addEventListener('click', async () => {
+  demo = !demo; $('#demoBtn').setAttribute('aria-pressed', demo); $('#simBar').classList.toggle('on', demo);
+  if (kitL.open) await kitL.disconnect(); if (octoL.linked) await octoL.disconnect(); resetSteps('kit'); resetSteps('octo');
+  kitMsg(demo ? 'Demo mode: press Connect to start a simulated kit.' : 'Plug it in with a USB data cable, then press Connect.');
+  octoMsg(demo ? 'Demo mode: press Connect to start a simulated Octopus 16.' : 'Power it from the power bank, then press Connect.');
+});
+$('#simBlink').addEventListener('click', () => { if (octoL.sim) octoL.sim.blinkUntil = now() + 350; });
+const miss = []; if (!('serial' in navigator)) miss.push('Web Serial (for the starter kit)'); if (!('bluetooth' in navigator)) miss.push('Web Bluetooth (for the Octopus 16)');
+if (miss.length) { const n = $('#apiNotice'); n.hidden = false; n.textContent = `This browser doesn't offer ${miss.join(' and ')}. Use desktop Chrome or Edge, opened from https:// or http://localhost. Demo mode still works here.`; }
+
+/* ============================================================
+   Live 3D kit (isometric), driven by the real hardware state
+   ============================================================ */
+let S = { knob: 512, button: false, dark: false, hand: null, motion: false, loud: false, led: 0, led8: 0, servo: 90, lcd: ['', ''], buzz: false, relay: false, octoLive: false, octoLinked: false };
+let CO = [];
+/* ================= isometric scene ================= */
+const svg = $('#scene'), stage = $('#stage');
+const V = { rot: -0.32, zoom: 1, px: 0, py: 0 };
+const W0 = { cx: 150, cy: 85 };
+const COS30 = Math.cos(Math.PI / 6), SIN30 = .5;
+function rot(x, y) { const dx = x - W0.cx, dy = y - W0.cy, c = Math.cos(V.rot), s = Math.sin(V.rot); return [dx * c - dy * s, dx * s + dy * c]; }
+function P(x, y, z = 0) { const [rx, ry] = rot(x, y); return [(rx - ry) * COS30, (rx + ry) * SIN30 - z]; }
+const depth = (x, y, z = 0) => { const [rx, ry] = rot(x, y); return rx + ry + z * 0.01; };
+const pts = (a) => a.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+const STK = 'stroke="#1a395f" stroke-width="1.1" stroke-linejoin="round"';
+function shade(hex, f) { const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = n >> 8 & 255, b = n & 255; r = Math.round(r * f); g = Math.round(g * f); b = Math.round(b * f); return `rgb(${clamp(r, 0, 255)},${clamp(g, 0, 255)},${clamp(b, 0, 255)})`; }
+function boxSVG(x, y, w, d, h, z, col, opt = {}) {
+  const c = [[x, y], [x + w, y], [x + w, y + d], [x, y + d]];
+  let s = '';
+  const faces = [[0, 1, [0, -1]], [1, 2, [1, 0]], [2, 3, [0, 1]], [3, 0, [-1, 0]]];
+  for (const [a, b, n] of faces) {
+    const cr = Math.cos(V.rot), sr = Math.sin(V.rot); const nx = n[0] * cr - n[1] * sr, ny = n[0] * sr + n[1] * cr;
+    if (nx + ny <= 0.001) continue;
+    const lightF = nx > ny ? .78 : .62;
+    s += `<polygon points="${pts([P(...c[a], z), P(...c[b], z), P(...c[b], z + h), P(...c[a], z + h)])}" fill="${opt.side || shade(col, lightF)}" ${STK}/>`;
+  }
+  s += `<polygon points="${pts(c.map(p => P(p[0], p[1], z + h)))}" fill="${col}" ${STK} ${opt.top || ''}/>`;
+  return s;
+}
+function cylSVG(x, y, r, h, z, col, opt = {}) {
+  const N = 22; const top = [], bot = []; let s = '';
+  for (let i = 0; i < N; i++) { const a = i / N * Math.PI * 2; top.push([x + r * Math.cos(a), y + r * Math.sin(a)]); }
+  // side: visible segments
+  const cr = Math.cos(V.rot), sr = Math.sin(V.rot);
+  const segs = [];
+  for (let i = 0; i < N; i++) {
+    const a = (i + .5) / N * Math.PI * 2, nx = Math.cos(a) * cr - Math.sin(a) * sr, ny = Math.cos(a) * sr + Math.sin(a) * cr;
+    if (nx + ny > -0.05) segs.push(i);
+  }
+  if (h > 0) {
+    // draw one polygon for the band
+    let band = '';
+    for (const i of segs) { const p0 = top[i], p1 = top[(i + 1) % N]; band += `<polygon points="${pts([P(...p0, z), P(...p1, z), P(...p1, z + h), P(...p0, z + h)])}" fill="${opt.side || shade(col, .7)}" stroke="${opt.side || shade(col, .7)}" stroke-width=".6"/>`; }
+    s += band;
+    // outline silhouette
+    const lft = P(...top[segs[0]], z), rgt = P(...top[(segs[segs.length - 1] + 1) % N], z);
+    s += `<polyline points="${pts(segs.map(i => P(...top[i], z)).concat([P(...top[(segs[segs.length - 1] + 1) % N], z)]))}" fill="none" ${STK}/>`;
+    s += `<line x1="${lft[0]}" y1="${lft[1]}" x2="${lft[0]}" y2="${lft[1] - h}" ${STK}/><line x1="${rgt[0]}" y1="${rgt[1]}" x2="${rgt[0]}" y2="${rgt[1] - h}" ${STK}/>`;
+  }
+  s += `<polygon points="${pts(top.map(p => P(p[0], p[1], z + h)))}" fill="${col}" ${STK} ${opt.top || ''}/>`;
+  return s;
+}
+function textOnPlane(x, y, z, str, size, fill, extra = '') {
+  const o = P(x, y, z), ux = P(x + 1, y, z), uy = P(x, y + 1, z);
+  const a = ux[0] - o[0], b = ux[1] - o[1], c = uy[0] - o[0], d = uy[1] - o[1];
+  return `<text transform="matrix(${a.toFixed(4)},${b.toFixed(4)},${c.toFixed(4)},${d.toFixed(4)},${o[0].toFixed(2)},${o[1].toFixed(2)})" font-family="JetBrains Mono,monospace" font-size="${size}" fill="${fill}" ${extra}>${str}</text>`;
+}
+
+// module anchor points (world coords, z)
+const A = {
+  board: [30, 150, 16], octopus: [306, 70, 14], xiao: [302, 46, 28], usb: [-8, 96, 10], mcu: [112, 104, 18], lcd: [100, 48, 19],
+  led: [148, 118, 30], led8: [134, 118, 26], button: [146, 146, 26], slider: [0, 0, 0], servo: [212, 52, 46], light: [52, 104, 18],
+  ultra: [70, 70, 30], buzzer: [24, 52, 28], sound: [186, 126, 22], temp: [18, 100, 22], pir: [128, 76, 32], relay: [36, 22, 30], ir: [182, 150, 22]
+};
+const SL = { x0: 166, x1: 222, y: 98 };
+function sliderPos() { return SL.x0 + (SL.x1 - SL.x0) * S.knob / 1023; }
+A.slider = () => [sliderPos(), SL.y + 3, 26];
+
+function sceneItems() {
+  const it = []; // [depth, svg]
+  const add = (dx, dy, dz, s) => it.push([depth(dx, dy, dz), s]);
+  const cur = { eeg: S.octoLive };
+  // case & board
+  let base = boxSVG(-6, -6, 252, 182, 12, 0, '#00bbd8', {});
+  base += boxSVG(2, 2, 236, 166, 2, 12, '#fbfcfd', {});
+  // board printing
+  base += textOnPlane(10, 162, 14.1, 'ALL in one Starter Kit for Arduino · Elecrow', 5, '#8fa3b5');
+  // traces on board
+  base += `<polyline points="${pts([P(30, 120, 14.1), P(90, 120, 14.1), P(100, 110, 14.1)])}" fill="none" stroke="#d7e2ea" stroke-width="1.2"/>`;
+  base += `<polyline points="${pts([P(160, 40, 14.1), P(200, 40, 14.1), P(205, 46, 14.1)])}" fill="none" stroke="#d7e2ea" stroke-width="1.2"/>`;
+  const Z = 14;
+  // relay
+  add(36, 22, 0, boxSVG(24, 12, 26, 20, 14, Z, S.relay ? '#4f8df0' : '#2f6fd1') + boxSVG(14, 16, 10, 12, 6, Z, '#2f9e5a') + (S.relay ? (() => { const g = P(46, 30, Z + 15); return `<circle cx="${g[0]}" cy="${g[1]}" r="3" fill="#ff3b30"/><circle cx="${g[0]}" cy="${g[1]}" r="12" fill="url(#glowR)"/>`; })() : ''));
+  // buzzer
+  add(24, 52, 0, cylSVG(24, 52, 9, 10, Z, '#23252b') + cylSVG(24, 52, 1.6, 0.3, Z + 10, '#000'));
+  // LCD
+  {
+    let s = boxSVG(78, 14, 84, 34, 5, Z, '#1d3f8a') + boxSVG(83, 19, 74, 24, .6, Z + 5, '#2f63d8');
+    const [l1, l2] = S.lcd; const lit = !!(l1 || l2);
+    if (lit) { s += textOnPlane(86, 28, Z + 5.7, esc(l1).padEnd(16).slice(0, 16), 6.4, '#e7f0ff', 'xml:space="preserve"'); s += textOnPlane(86, 38, Z + 5.7, esc(l2).padEnd(16).slice(0, 16), 6.4, '#e7f0ff', 'xml:space="preserve"'); }
+    add(120, 30, 0, s);
+  }
+  // ultrasonic
+  add(70, 70, 0, boxSVG(52, 62, 38, 16, 3, Z, '#2c6b4d') + cylSVG(61, 70, 7, 10, Z + 3, '#c9cdd3') + cylSVG(61, 70, 4, .3, Z + 13, '#5d636b') + cylSVG(81, 70, 7, 10, Z + 3, '#c9cdd3') + cylSVG(81, 70, 4, .3, Z + 13, '#5d636b'));
+  // hand in front of ultrasonic (lesson distance)
+  if (S.hand !== null && S.hand > 0 && S.hand < 30) { const hy = 62 - 4 - S.hand * 1.0; add(70, hy, 0, boxSVG(56, hy - 6, 30, 6, 30, Z, '#e8b48f')); }
+  // temp DHT20
+  add(18, 100, 0, boxSVG(10, 92, 16, 16, 7, Z, '#f2f2ef') + boxSVG(12, 94, 12, 12, .4, Z + 7, '#3a3d44'));
+  // light sensor BH1750
+  add(52, 104, 0, boxSVG(46, 98, 12, 12, 2, Z, '#7b2d8b') + (S.dark ? boxSVG(40, 92, 24, 24, 16, Z + 8, '#e8b48f') : '') + boxSVG(50, 102, 4, 4, 1.4, Z + 2, '#1a1a1a'));
+  // mcu
+  add(112, 104, 0, boxSVG(104, 96, 18, 18, 3, Z, '#1f2228') + textOnPlane(106, 107, Z + 3.1, 'ATmega', 3.2, '#8f96a3'));
+  // PIR
+  { const walk = S.motion; let s = boxSVG(118, 66, 20, 20, 3, Z, '#2c6b4d') + cylSVG(128, 76, 8, 6, Z + 3, '#f4f4f2') + cylSVG(128, 76, 5.5, 3, Z + 9, walk ? '#fff3c2' : '#ffffff'); add(128, 76, 0, s); }
+  // servo
+  {
+    let s = boxSVG(200, 36, 22, 34, 20, Z, '#2f63d8') + boxSVG(196, 40, 30, 4, 2, Z + 14, '#2a57c0');
+    const hx = 211, hy = 44, hz = Z + 20; s += cylSVG(hx, hy, 5, 4, hz, '#f4f4f2');
+    const ang = (S.servo - 90) * Math.PI / 180; const ex = hx + Math.sin(ang) * 20, ey = hy - Math.cos(ang) * 20;
+    const a1 = P(hx, hy, hz + 4.5), a2 = P(ex, ey, hz + 4.5);
+    s += `<line x1="${a1[0]}" y1="${a1[1]}" x2="${a2[0]}" y2="${a2[1]}" stroke="#1a395f" stroke-width="7" stroke-linecap="round"/><line x1="${a1[0]}" y1="${a1[1]}" x2="${a2[0]}" y2="${a2[1]}" stroke="#f4f4f2" stroke-width="4.6" stroke-linecap="round"/>`;
+    // dial ticks on board
+    for (let d = 0; d <= 180; d += 45) { const r = (d - 90) * Math.PI / 180, q1 = P(hx + Math.sin(r) * 25, hy - Math.cos(r) * 25, Z + .1), q2 = P(hx + Math.sin(r) * 28, hy - Math.cos(r) * 28, Z + .1); s = `<line x1="${q1[0]}" y1="${q1[1]}" x2="${q2[0]}" y2="${q2[1]}" stroke="#b6c6d4" stroke-width="1.2"/>` + s; }
+    add(211, 70, 0, s);
+  }
+  // slider pot
+  { let s = boxSVG(160, 92, 68, 12, 4, Z, '#c2c6cc') + boxSVG(164, 96, 60, 4, .3, Z + 4, '#1d2026'); const sx = sliderPos(); s += `<g data-hot="knob" style="cursor:ew-resize">${boxSVG(sx - 4, 93, 8, 10, 8, Z + 4, '#e7e9ec')}</g>`; add(195, 104, 0, s); }
+  // LEDs
+  {
+    const on = S.led === 1 || (S.led === 2 && Math.floor(now() / 200) % 2 === 0);
+    let s = boxSVG(140, 112, 16, 14, 2, Z, '#f0ece4') + cylSVG(148, 119, 3.4, 9, Z + 2, on ? '#ff3b30' : '#8c2a24') + cylSVG(148, 119, 3.4, 0.01, Z + 11, on ? '#ff8a80' : '#a3352d');
+    if (on) { const g = P(148, 119, Z + 9); s += `<circle cx="${g[0]}" cy="${g[1]}" r="20" fill="url(#glowR)"/>`; }
+    add(148, 120, 0, s);
+    const on8 = S.led8 === 1; let s8 = cylSVG(134, 119, 2.6, 7, Z, on8 ? '#ffcf3a' : '#8b6d1f'); if (on8) { const g = P(134, 119, Z + 7); s8 += `<circle cx="${g[0]}" cy="${g[1]}" r="15" fill="url(#glowY)"/>`; } add(134, 120, 0, s8);
+  }
+  // button
+  { const pr = S.button; add(146, 146, 0, boxSVG(136, 136, 20, 20, 3, Z, '#1f2228') + `<g data-hot="button" style="cursor:pointer">${boxSVG(139, 139, 14, 14, pr ? 4 : 7, Z + 3, '#2fbf55')}</g>`); }
+  // sound
+  { const loud = S.loud; let s = boxSVG(178, 118, 16, 16, 2, Z, '#2c6b4d') + cylSVG(186, 126, 5, 4, Z + 2, '#222') + cylSVG(186, 126, 2, .2, Z + 6, '#777'); if (loud) { const c0 = P(186, 126, Z + 7); for (let i = 1; i <= 3; i++) s += `<circle cx="${c0[0]}" cy="${c0[1]}" r="${6 + i * 6}" fill="none" stroke="#00bbd8" stroke-width="1.4" opacity="${1 - i * .25}"/>`; } add(186, 126, 0, s); }
+  // IR
+  add(182, 150, 0, boxSVG(176, 144, 12, 12, 2, Z, '#f0ece4') + boxSVG(179, 147, 6, 5, 5, Z + 2, '#2a2a2a'));
+  // soil port
+  add(70, 146, 0, boxSVG(62, 140, 16, 10, 6, Z, '#f6f6f2') + boxSVG(64, 141, 12, 4, .3, Z + 6, '#c9c5bb'));
+  // buzzer waves
+  if (S.buzz) { const c0 = P(24, 52, Z + 12); let s = ''; for (let i = 1; i <= 3; i++) s += `<path d="M${c0[0] + 8 + i * 6} ${c0[1] - 10 - i * 3} q8 ${8 + i * 2} 0 ${18 + i * 5}" fill="none" stroke="#d23a4f" stroke-width="2" stroke-linecap="round" opacity="${1 - i * .22}"/>`; it.push([1e6, s]); }
+  // relay indicator
+  // Octopus 16
+  {
+    const ox = 306, oy = 52, K = 1.45; let s = '';
+    for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2; s += cylSVG(ox + Math.cos(a) * 17, oy + Math.sin(a) * 17, 2.6, 11, 0, '#c9a14a'); }
+    for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2 + .3; s += cylSVG(ox + Math.cos(a) * 8, oy + Math.sin(a) * 8, 2.6, 11, 0, '#d4ad55'); }
+    s += cylSVG(ox, oy, 2.6, 11, 0, '#c9a14a');
+    s += cylSVG(ox, oy, 22 * K, 3, 11, '#22262c');
+    s += boxSVG(ox - 13, oy - 16, 26, 32, 9, 14, '#1b1d22') + boxSVG(ox - 10, oy - 12, 20, 17, 4, 23, '#c7ccd2') + boxSVG(ox + 2, oy + 8, 8, 7, 4, 23, '#9aa0a8');
+    // antenna wire
+    const w1 = P(ox - 10, oy - 12, 26), w2 = P(ox - 40, oy - 26, 30); s += `<path d="M${w1[0]} ${w1[1]} Q ${(w1[0] + w2[0]) / 2} ${w1[1] - 18} ${w2[0]} ${w2[1]}" fill="none" stroke="#1a395f" stroke-width="1.4"/>`;
+    if (cur.eeg) { const c0 = P(ox, oy, 44); for (let i = 1; i <= 3; i++) s += `<path d="M${c0[0] - 10 - i * 7} ${c0[1] - 4 - i * 6} q${10 + i * 7} ${-8 - i * 4} ${20 + i * 14} 0" fill="none" stroke="#00bbd8" stroke-width="1.6" stroke-linecap="round" opacity="${.9 - i * .2}"/>`; }
+    add(ox, oy + 40, 0, `<g opacity="${S.octoLinked ? 1 : .45}">${s}</g>`);
+  }
+  // USB cable
+  { const a = P(-6, 96, 6), b = P(-40, 110, 2); add(-10, 96, 0, `<path d="M${a[0]} ${a[1]} C ${a[0] - 30} ${a[1] + 10}, ${b[0] + 10} ${b[1] - 20}, ${b[0] - 40} ${b[1] + 10}" fill="none" stroke="#1a395f" stroke-width="3" stroke-linecap="round"/>` + boxSVG(-10, 92, 6, 8, 5, 3, '#9aa0a8')); }
+  it.sort((a, b) => a[0] - b[0]);
+  return base + it.map(x => x[1]).join('');
+}
+function bounds() { let xs = [], ys = []; for (const [x, y] of [[-40, -6], [246, -6], [246, 176], [-40, 176], [345, 20], [345, 90], [270, 90], [270, 20]]) for (const z of [0, 50]) { const p = P(x, y, z); xs.push(p[0]); ys.push(p[1]); } return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]; }
+let VB = [0, 0, 100, 100];
+function render() {
+  const r = stage.getBoundingClientRect(); if (r.width < 2 || r.height < 2) return; const [x0, y0, x1, y1] = bounds();
+  const narrow = r.width < 700; const padTop = narrow ? .22 : .18, padBot = narrow ? .3 : .22;
+  let w = (x1 - x0), h = (y1 - y0); const aspect = r.width / Math.max(1, r.height);
+  let vw = w * (narrow ? 1.12 : 1.4), vh = h * (1 + padTop + padBot + (narrow ? .05 : .2));
+  if (vw / vh < aspect) vw = vh * aspect; else vh = vw / aspect;
+  const zf = V.zoom * (narrow ? 1.22 : 1); vw /= zf; vh /= zf;
+  const cx = (x0 + x1) / 2 - V.px, cy = (y0 + y1) / 2 - V.py + h * (padBot - padTop) * .5;
+  VB = [cx - vw / 2, cy - vh / 2, vw, vh];
+  svg.setAttribute('viewBox', VB.map(v => v.toFixed(2)).join(' '));
+  svg.innerHTML = `<defs><radialGradient id="glowR"><stop offset="0" stop-color="#ff5a4a" stop-opacity=".75"/><stop offset="1" stop-color="#ff5a4a" stop-opacity="0"/></radialGradient><radialGradient id="glowY"><stop offset="0" stop-color="#ffd24a" stop-opacity=".8"/><stop offset="1" stop-color="#ffd24a" stop-opacity="0"/></radialGradient></defs>` + sceneItems() + hotDots();
+  drawLeaders();
+}
+function anchorOf(key) { const a = typeof A[key] === 'function' ? A[key]() : A[key]; return P(...a); }
+function hotDots() { return CO.map(([k]) => { const p = anchorOf(k); return `<g pointer-events="none"><circle cx="${p[0]}" cy="${p[1]}" r="3.2" fill="#ffffff" stroke="#00bbd8" stroke-width="1.6"/><circle cx="${p[0]}" cy="${p[1]}" r="1.4" fill="#00bbd8"/></g>`; }).join(''); }
+function toClient(p) { const r = stage.getBoundingClientRect(), sr = svg.getBoundingClientRect(); const sc = Math.min(sr.width / VB[2], sr.height / VB[3]); const ox = (sr.width - VB[2] * sc) / 2, oy = (sr.height - VB[3] * sc) / 2; return [sr.left - r.left + ox + (p[0] - VB[0]) * sc, sr.top - r.top + oy + (p[1] - VB[1]) * sc]; }
+function drawLeaders() {
+  const r = stage.getBoundingClientRect(); let s = ''; if (r.width < 2 || r.height < 2) return;
+  stage.querySelectorAll('.callout').forEach((el, i) => {
+    if (!CO[i]) return; const key = CO[i][0]; const [ax, ay] = toClient(anchorOf(key)); const cr = el.getBoundingClientRect();
+    const cx = cr.left - r.left, cy = cr.top - r.top, cw = cr.width, ch = cr.height;
+    let sx = clamp(ax, cx + 14, cx + cw - 14), sy = ay < cy ? cy : (ay > cy + ch ? cy + ch : (ax < cx ? cy + ch / 2 : cy + ch / 2));
+    if (ay >= cy && ay <= cy + ch) sx = ax < cx ? cx : cx + cw;
+    const mx = sx, my = ay; // elbow
+    s += `<path d="M${sx} ${sy} L${mx} ${sy + (my - sy) * .5} L${ax} ${ay}" fill="none" stroke="#1a395f" stroke-width="1" stroke-dasharray="2 3"/><circle cx="${sx}" cy="${sy}" r="3" fill="#ffffff" stroke="#00bbd8" stroke-width="1.5"/>`;
+  });
+  $('#leaders').innerHTML = s;
+}
+
+
+const ICON = {
+  usb: '<path d="M12 2v14"/><path d="m8 6 4-4 4 4"/><circle cx="12" cy="19" r="3"/><path d="M7 10v2l5 3 5-3v-2"/>',
+  pins: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="8" r="1.2"/><circle cx="8" cy="12" r="1.2"/><circle cx="16" cy="12" r="1.2"/><circle cx="12" cy="16" r="1.2"/>',
+  knob: '<circle cx="12" cy="12" r="7"/><path d="M12 12 16 8"/>',
+  flash: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>'
+};
+const SLOT = { tl: 'left:2%;top:14px', tr: 'right:2%;top:14px', bl: 'left:2%;bottom:56px', br: 'right:2%;bottom:118px' };
+function buildCallouts() {
+  CO = [['usb', 'tl', 'usb', 'Starter kit'], ['octopus', 'tr', 'pins', 'Octopus 16'], ['slider', 'bl', 'knob', 'Knob · A0'], [lastKey, 'br', 'flash', 'Last command']];
+  $('#callouts').innerHTML = CO.map(([, slot, ic, t], i) => `<div class="callout" id="co${i}" style="${SLOT[slot]}"><div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[ic]}</svg></div><b>${t}</b><span>—</span></div>`).join('');
+}
+function setCo(i, text, live) { const el = $('#co' + i); if (!el) return; const sp = el.querySelector('span'); if (sp.textContent !== text) sp.textContent = text; el.classList.toggle('live', !!live); }
+let shownServo = 90;
+function updateScene(dt) {
+  const f = kitL.fields, kitLive = kitL.open && kitL.ready && now() - kitL.lastDat < 2000;
+  const octoFlow = octoL.linked && now() - octoL.lastPk < 1000;
+  const pot = fnum(f.pot), lux = fnum(f.lux), d = fnum(f.dist_cm), snd = fnum(f.sound);
+  const target = mirror.servo === null ? 90 : mirror.servo;
+  shownServo += (target - shownServo) * Math.min(1, dt * 10);
+  S = {
+    knob: kitLive && pot !== null ? clamp(pot, 0, 1023) : 512,
+    button: kitLive && f.button === '1', motion: kitLive && f.pir === '1',
+    dark: kitLive && lux !== null && lux < 20, hand: kitLive && d !== null && d > 0 && d < 60 ? d : null,
+    loud: kitLive && snd !== null && snd >= 500,
+    led: kitL.open ? (mirror.led === 'flash' ? 2 : mirror.led ? 1 : 0) : 0, led8: kitL.open && mirror.led2 ? 1 : 0,
+    servo: shownServo, lcd: kitL.open ? mirror.lcd : ['', ''], buzz: kitL.open && mirror.buzz, relay: kitL.open && mirror.relay,
+    octoLive: octoFlow, octoLinked: octoL.linked
+  };
+  if (CO[3] && CO[3][0] !== lastKey) { CO[3][0] = lastKey; }
+  // callout texts
+  if (!kitL.open) setCo(0, 'Not connected. Press Connect above.', false);
+  else if (!kitL.ready) setCo(0, 'Port open, waiting for the OctoBio firmware…', false);
+  else if (!kitLive) setCo(0, 'Firmware ready, no readings yet…', false);
+  else setCo(0, `Live · ${kitL.datRate.toFixed(0)}/s · ${fnum(f.temp_c)?.toFixed(1) ?? '—'} °C · ${lux ?? '—'} lx`, true);
+  const r = octoL.res;
+  if (!octoL.linked) setCo(1, 'Not connected. Press Connect above.', false);
+  else if (!octoFlow) setCo(1, 'Linked, waiting for EEG data…', false);
+  else setCo(1, `Live · ${octoL.pkRate.toFixed(0)}/s · α ${r ? Math.round(r.alpha * 100) + '%' : '—'} · ${r ? (r.ok ? 'EEG ok' : 'check contact') : 'warming up'}`, true);
+  setCo(2, kitLive && pot !== null ? `${pot} of 1023` : '—', kitLive && pot !== null);
+  setCo(3, lastCmd && kitL.open ? lastCmd : 'Nothing sent yet', !!(lastCmd && kitL.open));
+  const sb = $('#stageBadge'); const any = kitLive || octoFlow; sb.textContent = any ? 'LIVE · MIRRORS THE REAL HARDWARE' : 'WAITING FOR HARDWARE'; sb.className = 'badge' + (any ? ' live' : '');
+}
+// mini EEG
+const mc = $('#miniEeg'), mx = mc.getContext('2d');
+function drawMini() {
+  const W = mc.width, H = mc.height; mx.clearRect(0, 0, W, H); const flow = octoL.linked && now() - octoL.lastPk < 1000;
+  mx.strokeStyle = '#e3ecf3'; mx.beginPath(); mx.moveTo(0, H / 2); mx.lineTo(W, H / 2); mx.stroke();
+  if (!flow) { $('#miniRms').textContent = '—'; return; }
+  mx.strokeStyle = '#00bbd8'; mx.lineWidth = 2; mx.beginPath(); const ring = octoL.ring[0], n = 750, sc = (H / 2 - 3) / 110;
+  for (let i = 0; i < n; i += 2) { const v = ring[(octoL.ri + i) % n], x = i / (n - 1) * W, y = H / 2 - clamp(v, -110, 110) * sc; i ? mx.lineTo(x, y) : mx.moveTo(x, y); }
+  mx.stroke(); const res = octoL.res; const el = $('#miniRms'); el.textContent = res ? '● RMS ' + res.rms.toFixed(0) + ' µV' : '…'; el.style.color = res && res.ok ? '#0090a8' : '#d23a4f';
+}
+// view controls (view only: the hardware is never changed from here)
+let rotT = V.rot; const rotBy = (dd) => { rotT += dd; };
+$('#rotL').addEventListener('click', () => rotBy(-Math.PI / 8)); $('#rotR').addEventListener('click', () => rotBy(Math.PI / 8));
+$('#zIn').addEventListener('click', () => { V.zoom = clamp(V.zoom * 1.2, .6, 3); sceneDirty = true; }); $('#zOut').addEventListener('click', () => { V.zoom = clamp(V.zoom / 1.2, .6, 3); sceneDirty = true; });
+$('#vReset').addEventListener('click', () => { rotT = -0.32; V.zoom = 1; V.px = 0; V.py = 0; sceneDirty = true; });
+stage.addEventListener('wheel', (e) => { e.preventDefault(); V.zoom = clamp(V.zoom * Math.exp(-e.deltaY * .0015), .6, 3); sceneDirty = true; }, { passive: false });
+let drag = null;
+svg.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, y: e.clientY, px: V.px, py: V.py }; svg.setPointerCapture(e.pointerId); svg.classList.add('dragging'); });
+svg.addEventListener('pointermove', (e) => { if (!drag) return; const sc = VB[2] / svg.getBoundingClientRect().width; V.px = drag.px + (e.clientX - drag.x) * sc; V.py = drag.py + (e.clientY - drag.y) * sc; sceneDirty = true; });
+const endDrag = () => { drag = null; svg.classList.remove('dragging'); }; svg.addEventListener('pointerup', endDrag); svg.addEventListener('pointercancel', endDrag);
+document.addEventListener('keydown', (e) => { const t = e.target; if (t && (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT' || t.tagName === 'SELECT')) return; if (e.key === 'q' || e.key === 'Q') rotBy(-Math.PI / 8); if (e.key === 'e' || e.key === 'E') rotBy(Math.PI / 8); });
+window.addEventListener('resize', () => { sceneDirty = true; });
+buildCallouts();
+
+/* ============================================================
+   Render loop
+   ============================================================ */
+let lastPaint = 0, lastScene = 0, lastT = 0;
+function frame(t) {
+  const dt = Math.min(.1, (t - lastT) / 1000); lastT = t;
+  if (t - lastPaint > 100) { paintReads(); paintEEG(); paintUserVals(); lastPaint = t; }
+  if (Math.abs(rotT - V.rot) > .001) { V.rot += (rotT - V.rot) * Math.min(1, dt * 10); sceneDirty = true; }
+  updateScene(dt);
+  if (t - lastScene > 90 || (sceneDirty && t - lastScene > 30)) { render(); sceneDirty = false; lastScene = t; }
+  drawMini();
+  drawTraces();
+  requestAnimationFrame(frame);
+}
+kitL.onChange = () => {}; octoL.onChange = () => {};
+paintMirror(); requestAnimationFrame(frame);
+window.__studio = { kitL, octoL, runScript, stopScript, mirror };
+})();
+</script>
+</body>
+</html>
