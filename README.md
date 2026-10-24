@@ -7,6 +7,7 @@
 
 <img src="https://github.com/pieeg-club/OctoBio-kit/blob/main/Images/octobio-how-to-start.gif" alt="general view" title="general view">  
 
+Try OctoBio Studio right now, just in the [Browser](https://octobridge.pieeg.com/studio.html)  
 
 # OctoBio Kit
 
